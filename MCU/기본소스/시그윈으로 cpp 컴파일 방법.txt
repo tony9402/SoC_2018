@@ -1,0 +1,6 @@
+ae32000-elf-uclibc-g++ -c -Dlinux -D__linux__ -Dunix -D__unix__ -D__uClinux__ -DEMBED Test.cpp -o Test.o
+ae32000-elf-uclibc-g++ -r -Xlinker -T/usr/local/ae32000-elf-uclibc-tools/lib/ae32000-elf2flt.ld Test.o -o Test.elf
+ae32000-elf-uclibc-elf2flt Test.elf
+mv Test.elf.bflt Test
+
+rm -f *.o *.elf *.bflt Test
