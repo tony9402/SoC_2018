@@ -58,6 +58,8 @@ output       led_test;
 // 720x480 -> 180x120 compression
 //-----------------------------------------------------------------
 
+//Just 720x480 => 720x240
+//=====================Start=========================
 reg [ 1:0] clk_div;     
 
 always @(negedge resetx or posedge clk_llc2)
@@ -84,6 +86,38 @@ wire oddframe   = odd & vref;
 
 // 60(480/8) clock generation
 wire href2_wr   = href3 & href2 & href & oddframe;// & oddframe2?;
+//=====================End=========================
+
+//720x480 => 90x60 * 2
+//*
+reg [ 2:0] clk_div;     
+
+always @(negedge resetx or posedge clk_llc2)
+   if      (~resetx)         clk_div <= 2'b0;
+   else                      clk_div <= clk_div + 1'b1;
+
+// clk_llc16 : 90(720/8) clock generation
+wire clk_llc16  = clk_div[2];
+
+// href2 : (480/2) clock generation
+reg  href2;
+always @(negedge resetx or posedge href)
+   if      (~resetx)          href2 <= 1'b0;
+   else                       href2 <= ~href2;
+
+// herf3 : (480/4) clock generation
+reg href3;
+always @(negedge resetx or posedge href2)
+   if      (~resetx)          href3 <= 1'b0;
+   else                       href3 <= ~href3;
+   
+// select only odd frame
+wire oddframe   = odd & vref;
+
+// 60(480/8) clock generation
+wire href2_wr   = href3 & href2 & href & oddframe;// & oddframe2?;
+
+//*/
 
 /////////////////////////////////////////////////////////////////////////////
 // YCbCr422 to RGB565
