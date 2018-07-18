@@ -35,7 +35,7 @@ typedef struct{
 
 int IsRED(HSV hsv)
 {
-    return ((220<=hsv.H)||(hsv.H<=11))&&(150<=hsv.S);
+    return ((220<=hsv.H)||(hsv.H<=11))&&(55<=hsv.S);
 }
 
 int IsGREEN(HSV hsv)
@@ -45,17 +45,17 @@ int IsGREEN(HSV hsv)
 
 int IsBLUE(HSV hsv)
 {
-    return ((120<=(hsv.H))&&((hsv.H)<=175))&&(150<=hsv.S);
+    return ((120<=(hsv.H))&&((hsv.H)<=175))&&(55<=hsv.S);
 }
 
 int IsYELLOW(HSV hsv)
 {
-    return ((30<=(hsv.H))&&((hsv.H)<=45))&&(150<=hsv.S);
+    return ((30<=(hsv.H))&&((hsv.H)<=45))&&(55<=hsv.S);
 }
 
 int IsORANGE(HSV hsv)
 {
-    return ((12<=(hsv.H))&&((hsv.H)<=20))&&(150<=hsv.S);
+    return ((12<=(hsv.H))&&((hsv.H)<=20))&&(55<=hsv.S);
 }
 
 HSV RGB565toHSV888(U16 RGB)
