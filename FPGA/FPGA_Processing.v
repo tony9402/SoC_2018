@@ -182,30 +182,22 @@ always @ (posedge clk_llc or negedge resetx)
      B_int <= X_int + C_int; 
      end
 
-
 wire [ 4:0] R = (R_int[20]) ? 5'b0 : (R_int[19:18] == 2'b0) ? R_int[17:13] : 5'b11111;
 wire [ 5:0] G = (G_int[20]) ? 6'b0 : (G_int[19:18] == 2'b0) ? G_int[17:12] : 6'b111111;
-wire [ 4:0] B = (B_int[20]) ? 5'b0 : (B_int[19:18] == 2'b0) ? B_int[17:13] : 5'b11111;	  
-
-wire [15:0] DecVData = {R,G,B};
+wire [ 4:0] B = (B_int[20]) ? 5'b0 : (B_int[19:18] == 2'b0) ? B_int[17:13] : 5'b11111;	 
+wire [15:0] DecVData = {R,G,B}; 
 /////////////////////////////////////////////////////////////////////////////
 
 // RGB565 to RGB888
-///*
 wire [ 7:0] R2 = {R[4:0],R[4:2]};
 wire [ 7:0] G2 = {G[5:0],G[5:4]};
 wire [ 7:0] B2 = {B[4:0],B[4:2]};
-
 wire [23:0] DecVData2 = {R2,G2,B2};
 ///////////////////////////////////////////
-/*
-reg [7:0] H,S,V;
-assign HSV[23:16]=H;
-assign HSV[15:8]=S;
-assign HSV[7:0]=V;*/
-//find max, min//
+
+//Find max & min
 reg[7:0] max, min;
-always@(posedge clk_llc16)begin
+always@(posedge clk_llc)begin
  if(R2 >= G2)
   begin
    if(R2 >= B2)
@@ -222,7 +214,7 @@ always@(posedge clk_llc16)begin
    end
 end
 
-always@(posedge clk_llc16)begin
+always@(posedge clk_llc)begin
  if(R2 <= G2)
   begin
    if(R2 <= B2)
@@ -239,6 +231,7 @@ always@(posedge clk_llc16)begin
    end
 end
 
+// RGB888 to HSV888
 reg[14:0] h_dividend;
 reg[7:0] h_divisor;
 wire[14:0] h_quotient;
@@ -248,7 +241,7 @@ reg[8:0] s_divisor;
 wire[16:0] s_quotient;
 reg[7:0] v;
 reg sign_flag;
-always@(posedge clk_llc16)begin
+always@(posedge clk_llc)begin
  if(max == min)
   begin
    sign_flag <= 0;
@@ -262,7 +255,7 @@ always@(posedge clk_llc16)begin
  else if(max == R2 && G2 >= B2)
   begin
    sign_flag <= 0;
-	h_dividend <= 60 * (G2 - B2);
+	h_dividend <= 43 * (G2 - B2);
 	h_divisor <= max - min;
 	h_add <= 0;
 	s_dividend <= 255 * (max - min);
@@ -272,46 +265,46 @@ always@(posedge clk_llc16)begin
  else if(max == R2 && G2 < B2)
   begin
    sign_flag <= 1;
-	h_dividend <= 60 * (B2 - G2);
+	h_dividend <= 43 * (B2 - G2);
 	h_divisor <= max - min;
-	h_add <= 360;
+	h_add <= 0;
 	s_dividend <= 255 * (max - min);
 	s_divisor <= max;
 	v <= max;
   end
+  //////////
  else if(max == G2)
   begin
    if(B2 >= R2)
 	 begin
 	 sign_flag <= 0;
-	 h_dividend <= 60 * (B2 - R2);
+	 h_dividend <= 43 * (B2 - R2);
 	 end
 	 else
 	 begin
 	 sign_flag <= 1;
-	 h_dividend <= 60 * (R2 - B2);
+	 h_dividend <= 43 * (R2 - B2);
 	 end
-	 
 	 h_divisor <= max - min;
-	 h_add <= 120;
+	 h_add <= 85;
 	 s_dividend <= 255 * (max - min);
 	 s_divisor <= max;
 	end
+	///////////
  else if(max == B2)
   begin
    if(R2 >= G2)
 	 begin
 	 sign_flag <= 0;
-	 h_dividend <= 60 * (R2 - G2);
+	 h_dividend <= 43 * (R2 - G2);
 	 end
 	 else
 	 begin
 	 sign_flag <= 1;
-	 h_dividend <= 60 * (G2 - R2);
+	 h_dividend <= 43 * (G2 - R2);
 	 end
-	 
 	 h_divisor <= max - min;
-	 h_add <= 240;
+	 h_add <= 171;
 	 s_dividend <= 255 * (max - min);
 	 s_divisor <= max;
 	end
@@ -321,22 +314,58 @@ wire [7:0] H = h_add+ (h_dividend/h_divisor);
 wire [7:0] S = s_dividend/s_divisor;
 wire [7:0] V = max;
 //-----------------------------------------------------------------
-// RGB888 to HSV
-//-----------------------------------------------------------------
-// Find max=V and min
-//-----------------------------------------------------------------
-/*wire[7:0] V   = (R>G) ? R : (G>B) ? G : B ;
-wire[7:0] min = (R<G) ? R : (G<B) ? G : B ;
 
-//Find S
-wire[7:0] S   = (max==0) ? 0 : (max-min)/max;
+// HSV888 to HSV565
+wire[15:0] DecVData3={H[7:2],S[7:3],V[7:3]};
+wire[15:0] DecVData4={V[7:3],V[7:2],V[7:3]};
+///////////////////////////////////////////  
 
-//Find H
-wire[7:0] H0  = (max==R && G>=B) ? 60*(G-B)/(max-min) : (max==R && G<B) ? 360+ 60*(G-B)/(max-min) : (max==G) ? 120+ 60*(B-R)/(max-min) : 240 + 60*(R-G)/(max-min);
-wire[7:0] H   = (H0<0) ? H0 + 360 : H0;
-wire[7:0] V   =  max;*/
-wire[23:0] DecVData3={H,S,V};
-///////////////////////////////////////////
+//Find colors I want
+reg[4:0] r,b;
+reg[5:0] g;
+reg[7:0] h,s;
+always @(posedge clk_llc16)begin
+ h <= H;
+ s <= S;
+   if ((50 < h)&&(h < 110)&&(30 < s)&&(40 < v))
+	 begin
+	 r <= 5'b0;
+	 g <= 6'b111111;
+	 b <= 5'b0; //Green
+	 end
+	else if(((h < 25) || (225 < h)) && (45 < s)&&(40 < v)) 
+	 begin
+	 r <= 5'b11111;
+	 g <= 6'b0;
+	 b <= 5'b0; //Red
+	 end
+   else if(((110 < h) && (h <160)) && (45 < s)&&(40 < v)) 
+	 begin
+	 r <= 5'b11111;
+	 g <= 6'b111111;
+	 b <= 5'b0; //Yellow
+	 end
+	else if(((160 < h) && (h <225)) && (45 < s)&&(40 < v)) 
+	 begin
+	 r <= 5'b0;
+	 g <= 6'b0;
+	 b <= 5'b11111; //Blue
+	 end 
+   else if(((25 < h) && (h <50)) && (45 < s)&&(40 < v)) 
+	 begin
+	 r <= 5'b11111;
+	 g <= 6'b101010;
+	 b <= 5'b0; //Orenge
+	 end  
+	else 
+	 begin
+	 r <= 5'b11111;
+	 g <= 6'b111111;
+	 b <= 5'b11111;
+	 end	
+end 
+
+wire [15:0] DecVData5 = {r,g,b};
 
 // 90x60 write clock generation 
 wire vpo_wrx    = ~(vref & href2_wr & clk_llc16);
@@ -364,12 +393,12 @@ wire   vd_wrx    = ~(~vpo_wrxd1 & vpo_wrxd3);
 //
 //------------------------------------------------------
 
-reg [23:0] vdata;
+reg [15:0] vdata;
 reg [15:0] vadr;
 reg A_addr;
 always @(negedge resetx or posedge clk_llc16)
-   if      (~resetx)           vdata <= 24'b0;
-	else if (href2_wr)          vdata <= DecVData3;
+   if      (~resetx)           vdata <= 16'b0;
+	else if (href2_wr)          vdata <= DecVData5;
 
 always @(negedge resetx or posedge clk_llc16)
    if      (~resetx)           vadr[14:0] <= 15'b0;
@@ -383,8 +412,6 @@ always @(negedge resetx or posedge odd)
 always @(negedge resetx or posedge Sys_clk)
    if      (~resetx)       A_addr <= 1'b0;
    else                    A_addr <= AMAmem_irq1;
-
-
 
 //----------------------------------------------------------------------------------
 // External Interrupt Generation
@@ -506,9 +533,9 @@ assign vmem_rden     = mcs5; 		// SRAM Read  //~mcs5;
 //assign mem_bex[0]  = ~(mcs1 | mcs3 | mcs5) ;	// 16bit LSB Byte enable
 
 
-assign AMAmem_data  = ( ~AMAmem_csx ) ? vmem_q : 16'bZ;
+assign AMAmem_data  = ( ~AMAmem_csx ) ? ram_data : 16'bZ; //ram_data
 
-assign vmem_data    = ( mcs1 | mcs2 ) ? vdata : 24'bZ ;
+assign vmem_data    = ( mcs1 | mcs2 ) ? vdata : 16'bZ ;
 //assign vmem_data    = ( (~mcs0 & mcs1) | (~mcs0 & mcs2) ) ? vdata : 16'bZ ;
 
 assign vmem_addr     = ( mcs1 | mcs2 ) ? vadr : {A_addr, AMAmem_adr};	// 16bit SRAM address
@@ -574,7 +601,97 @@ always @(negedge resetx or posedge Sys_clk)
    if      (~resetx)         	waitx_d10 <= 1'b0;
    else                     	waitx_d10 <= waitx_d9;   
 
+reg [3:0] ram_state = 4'b0000;
+reg [15:0] AMA_adr;
+reg [14:0] Adr;
+reg [8:0] ram_R;
+reg [9:0] ram_G;
+reg [8:0] ram_B;
 
+wire [15:0] ram_data = {ram_B[8:4], ram_G[9:4], ram_R[8:4]};
+
+always @(negedge resetx or posedge Sys_clk)
+begin
+   if (~resetx) ram_state[3:0] <= 4'b0000;
+   else if(Adr[14:0] != AMAmem_adr[14:0]) 
+   begin
+      Adr[14:0] <= AMAmem_adr[14:0];
+      ram_state[3:0] <= 4'b0001;
+   end
+   else if(ram_state[3:0] == 4'b0001)
+   begin
+      AMA_adr <= {A_addr, AMAmem_adr} - 'd181;
+      ram_R <= (vmem_q[4:0] << 0);
+      ram_G <= (vmem_q[10:5] << 0);
+      ram_B <= (vmem_q[15:11] << 0);
+      ram_state[3:0] <= ram_state[3:0] + 'b1;
+   end
+   else if(ram_state[3:0] == 4'b0010)
+   begin
+      AMA_adr <= AMA_adr + 'd1;
+      ram_R <= ram_R + (vmem_q[4:0] << 1);
+      ram_G <= ram_G + (vmem_q[10:5] << 1);
+      ram_B <= ram_B + (vmem_q[15:11] << 1);
+      ram_state[3:0] <= ram_state[3:0] + 'b1;
+   end
+   else if(ram_state[3:0] == 4'b0011)
+   begin
+      AMA_adr <= AMA_adr + 'd1;
+      ram_R <= ram_R + (vmem_q[4:0] << 0);
+      ram_G <= ram_G + (vmem_q[10:5] << 0);
+      ram_B <= ram_B + (vmem_q[15:11] << 0);
+      ram_state[3:0] <= ram_state[3:0] + 'b1;
+   end
+   else if(ram_state[3:0] == 4'b0100)
+   begin
+      AMA_adr <= AMA_adr + 'd178;
+      ram_R <= ram_R + (vmem_q[4:0] << 1);
+      ram_G <= ram_G + (vmem_q[10:5] << 1);
+      ram_B <= ram_B + (vmem_q[15:11] << 1);
+      ram_state[3:0] <= ram_state[3:0] + 'b1;
+   end
+   else if(ram_state[3:0] == 4'b0101)
+   begin
+      AMA_adr <= AMA_adr + 'd1;
+      ram_R <= ram_R + (vmem_q[4:0] << 2);
+      ram_G <= ram_G + (vmem_q[10:5] << 2);
+      ram_B <= ram_B + (vmem_q[15:11] << 2);
+      ram_state[3:0] <= ram_state[3:0] + 'b1;
+   end
+   else if(ram_state[3:0] == 4'b0110)
+   begin
+      AMA_adr <= AMA_adr + 'd1;
+      ram_R <= ram_R + (vmem_q[4:0] << 1);
+      ram_G <= ram_G + (vmem_q[10:5] << 1);
+      ram_B <= ram_B + (vmem_q[15:11] << 1);
+      ram_state[3:0] <= ram_state[3:0] + 'b1;
+   end
+   else if(ram_state[3:0] == 4'b0111)
+   begin
+      AMA_adr <= AMA_adr + 'd178;
+      ram_R <= ram_R + (vmem_q[4:0] << 0);
+      ram_G <= ram_G + (vmem_q[10:5] << 0);
+      ram_B <= ram_B + (vmem_q[15:11] << 0);
+      ram_state[3:0] <= ram_state[3:0] + 'b1;
+   end
+   else if(ram_state[3:0] == 4'b1000)
+   begin
+      AMA_adr <= AMA_adr + 'd1;
+      ram_R <= ram_R + (vmem_q[4:0] << 1);
+      ram_G <= ram_G + (vmem_q[10:5] << 1);
+      ram_B <= ram_B + (vmem_q[15:11] << 1);
+      ram_state[3:0] <= ram_state[3:0] + 'b1;
+   end
+   else if(ram_state[3:0] == 4'b1001)
+   begin
+      AMA_adr <= AMA_adr + 'd1;
+      ram_R <= ram_R + (vmem_q[4:0] << 0);
+      ram_G <= ram_G + (vmem_q[10:5] << 0);
+      ram_B <= ram_B + (vmem_q[15:11] << 0);
+      ram_state[3:0] <= 4'b0;
+   end
+end
+   
 assign AMAmem_waitx = waitx & waitx_d1 & waitx_d2 & waitx_d3 & waitx_d4 & waitx_d5 & waitx_d6 & waitx_d7 & waitx_d8 & waitx_d9 & waitx_d10;
 
 
@@ -591,4 +708,25 @@ always @(negedge resetx or posedge vadrclk )
    else                        led_blink   <= led_blink + 1'b1;
 
 assign led_test = led_blink[5];
-endmodule
+/* <승훈 HSV변환>
+reg[7:0] V_reg,min,S_reg,H0,H_reg;  
+  
+always@(posedge clk_llc16)begin  
+	V_reg   = (R2>G2) ? R2 : (G2>B2) ? G2 : B2 ;  
+	min = (R2<G2) ? R2 : (G2<B2) ? G2 : B2 ;  
+ 	S_reg   = (V_reg==0) ? 0 : (V_reg-min)/V_reg;  
+ 	H0  = (V_reg==R2) ? ((G2-B2)/(V_reg-min))<<5+((G2-B2)/(V_reg-min))<<3+((G2-B2)/(V_reg-min))<<1+((G2-B2)/(V_reg-min)) : (V_reg==G2) ? ((B2-R2)/(V_reg-min)+2)<<5+((B2-R2)/(V_reg-min)+2)<<3+((B2-R2)/(V_reg-min)+2)<<1+((B2-R2)/(V_reg-min)+2) : ((R2-G2)/(V_reg-min)+4)<<5+((R2-G2)/(V_reg-min)+4)<<3+((R2-G2)/(V_reg-min)+4)<<1+((R2-G2)/(V_reg-min)+4);  
+ 	H_reg   = (H0<0) ? H0 +8'b11111111  : H0;  
+ end  
+   
+ wire[7:0] H_8=H_reg;  
+ wire[7:0] S_8=S_reg;  
+ wire[7:0] V_8=V_reg;  
+ wire[23:0] DecV_regData3 = {H_8,S_8,V_8};  
+ 
+ wire[4:0] H_6=H_reg[7:3];
+ wire[5:0] S_5=S_reg[7:2];
+ wire[4:0] V_5=V_reg[7:3];   
+ wire[15:0] DecV_regData4 = {H_6,S_5,V_5}; 
+ */
+ endmodule
