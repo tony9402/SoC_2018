@@ -178,7 +178,30 @@ wire [ 4:0] B = (B_int[20]) ? 5'b0 : (B_int[19:18] == 2'b0) ? B_int[17:13] : 5'b
 
 wire [15:0] DecVData = {R,G,B};
 /////////////////////////////////////////////////////////////////////////////
+reg [ 5:0] r,b;
+reg [ 6:0] g;
+wire [ 5:0] D_br = (B<R)?(R-B):(B-R);
+wire [ 5:0] D_gb = (G/2>=B)?(G/2-B):(B-G/2);
+wire [ 5:0] D_rg = (R<G/2)?(G/2-R):(R-G/2);
+always @ (posedge Sys_clk or negedge resetx)
+   if (~resetx)
+	 begin
+	 r <= 0; g = 0; b <=0;
+	 end
+	else if ((D_br <= 2)&&(D_gb <= 3)&&(D_rg <= 3)&&(R<8)&&(G<15)&&(B<8))
+	 begin
+	 r <= 5'b00000;
+	 g <= 6'b000000;
+    b <= 5'b00000;
+	 end
+   else
+	 begin
+	 r <= 5'b11111;
+	 g <= 6'b111111;
+    b <= 5'b11111;
+	 end
 
+wire [15:0] DecVData2 = {r,g,b};
 
 // 180x120 write clock generation 
 wire vpo_wrx    = ~(vref & href2_wr & clk_llc8);
@@ -230,7 +253,7 @@ reg [15:0] vadr;
 reg A_addr;
 always @(negedge resetx or posedge clk_llc8)
    if      (~resetx)           vdata <= 16'b0;
-	else if (href2_wr)          vdata <= DecVData;
+	else if (href2_wr)          vdata <= DecVData2;
 
 always @(negedge resetx or posedge clk_llc8)
    if      (~resetx)           vadr[14:0] <= 15'b0;
