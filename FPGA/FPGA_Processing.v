@@ -178,12 +178,115 @@ wire [ 4:0] B = (B_int[20]) ? 5'b0 : (B_int[19:18] == 2'b0) ? B_int[17:13] : 5'b
 
 wire [15:0] DecVData = {R,G,B};
 /////////////////////////////////////////////////////////////////////////////
+//Convert RGB565 to RGB888
+wire[ 7:0] R2 = (R << 3)|(R>>2);
+wire[ 7:0] G2 = (G << 2)|(G>>4);
+wire[ 7:0] B2 = (B << 3)|(B>>2);
+/*wire [ 7:0] R2 = {R[4:0],R[4:2]};
+wire [ 7:0] G2 = {G[5:0],G[5:4]};
+wire [ 7:0] B2 = {B[4:0],B[4:2]};*/
+wire [24:0] DecVData2 = {R2,G2,B2};
+
+//Find max & min
+reg[7:0] max, min;
+always@(posedge Sys_clk or negedge resetx)
+  if (~resetx)
+	 begin
+	 max <= 0; min = 0; 
+	 end
+  else 
+    begin
+	 min = R2<G2 ? (R2<B2 ? R2:B2) : (G2 < B2 ? G2:B2);
+	 max = R2>G2 ? (R2>B2 ? R2:B2) : (G2 > B2 ? G2:B2);
+	 end
+	 
+//Convert RGB888 to HSV
+reg[7:0] h_dividend;
+reg[7:0] h_divisor;
+reg[7:0] h_add;
+reg[7:0] s_dividend;
+reg[7:0] s_divisor;
+reg[7:0] v;
+always@(posedge Sys_clk or negedge resetx)
+   if (~resetx)
+	 begin
+	 h_dividend <= 0; h_divisor = 0; h_add <= 0; s_dividend <= 0; s_divisor <= 0; v <= 0;
+	 end
+ else if(max == min)
+  begin
+	h_dividend <= 0;
+	h_divisor <= 1;
+	h_add <= 0;
+	s_dividend <= 0;
+	s_divisor <= 1;
+	v <= max;
+  end
+ else if(max == R2 && G2 >= B2)
+  begin
+	h_dividend <= (G2 - B2);
+	h_divisor <= max - min;
+	h_add <= 0;
+	s_dividend <= (max - min);
+	s_divisor <= max;
+	v <= max;
+  end
+ else if(max == R2 && G2 < B2)
+  begin
+	h_dividend <= (B2 - G2);
+	h_divisor <= max - min;
+	h_add <= 0;
+	s_dividend <= (max - min);
+	s_divisor <= max;
+	v <= max;
+  end
+  //////////
+ else if(max == G2)
+  begin
+   if(B2 >= R2)
+	 begin
+	 h_dividend <= (B2 - R2);
+	 end
+	 else
+	 begin
+	 h_dividend <= (R2 - B2);
+	 end
+	 h_divisor <= max - min;
+	 h_add <= 85;
+	 s_dividend <= (max - min);
+	 s_divisor <= max;
+	end
+	///////////
+ else if(max == B2)
+  begin
+   if(R2 >= G2)
+	 begin
+	 h_dividend <= (R2 - G2);
+	 end
+	 else
+	 begin
+	 h_dividend <= (G2 - R2);
+	 end
+	 h_divisor <= max - min;
+	 h_add <= 171;
+	 s_dividend <= (max - min);
+	 s_divisor <= max;
+	end
+
+wire [7:0] H = h_add+ 43*h_dividend/h_divisor;
+wire [7:0] S = 255*s_dividend/s_divisor;
+wire [7:0] V = max;
+wire[15:0] DecVData3={H[7:3],S[7:2],V[7:3]};
+
+// Find Colors using RGB Or HSV DATA
 reg [ 5:0] r,b;
 reg [ 6:0] g;
+reg [ 8:0] h,s;
 wire [ 5:0] D_br = (B<R)?(R-B):(B-R);
 wire [ 5:0] D_gb = (G/2>=B)?(G/2-B):(B-G/2);
 wire [ 5:0] D_rg = (R<G/2)?(G/2-R):(R-G/2);
-always @ (posedge Sys_clk or negedge resetx)
+always @ (posedge Sys_clk or negedge resetx)begin
+h <= H[7:0];
+s <= S[7:0];
    if (~resetx)
 	 begin
 	 r <= 0; g = 0; b <=0;
@@ -193,6 +296,36 @@ always @ (posedge Sys_clk or negedge resetx)
 	 r <= 5'b00000;
 	 g <= 6'b000000;
     b <= 5'b00000;
+	 end //Black
+	else if (((h<=15)||(220<=h))&&(30<s)&&(v<220))
+	 begin
+	 r <= 5'b11111;
+	 g <= 6'b000000;
+	 b <= 5'b00000;
+	 end //Red
+	else if (((60<=h)&&(h<=110))&&(30<s)&&(v<220))
+	 begin
+	 r <= 5'b00000;
+	 g <= 6'b111111;
+	 b <= 5'b00000;
+	 end //Green
+	else if (((170<=h)&&(h<=200))&&(30<s)&&(v<170))
+    begin
+	 r <= 5'b00000;
+	 g <= 6'b000000;
+	 b <= 5'b11111;
+	 end //Blue
+   else if((25 < h)&&(h < 50))
+	 begin
+	 r <= 5'b11111;
+	 g <= 6'b111111;
+	 b <= 5'b0; //Yellow
+	 end
+	else if((15 < h) && (h < 25)) 
+	 begin
+	 r <= 5'b11111;
+	 g <= 6'b011111;
+	 b <= 5'b0; //Orenge
 	 end
    else
 	 begin
@@ -200,8 +333,9 @@ always @ (posedge Sys_clk or negedge resetx)
 	 g <= 6'b111111;
     b <= 5'b11111;
 	 end
+end
 
-wire [15:0] DecVData2 = {r,g,b};
+wire [15:0] DecVData4 = {r,g,b};
 
 // 180x120 write clock generation 
 wire vpo_wrx    = ~(vref & href2_wr & clk_llc8);
@@ -253,7 +387,7 @@ reg [15:0] vadr;
 reg A_addr;
 always @(negedge resetx or posedge clk_llc8)
    if      (~resetx)           vdata <= 16'b0;
-	else if (href2_wr)          vdata <= DecVData2;
+	else if (href2_wr)          vdata <= DecVData4;
 
 always @(negedge resetx or posedge clk_llc8)
    if      (~resetx)           vadr[14:0] <= 15'b0;
