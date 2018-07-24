@@ -1,5 +1,5 @@
 Analysis & Synthesis report for SoC_Brain
-Tue Jul 24 17:39:49 2018
+Tue Jul 24 18:42:14 2018
 Quartus II 64-Bit Version 13.1.0 Build 162 10/23/2013 SJ Web Edition
 
 
@@ -65,13 +65,13 @@ applicable agreement for further details.
 +---------------------------------------------------------------------------------+
 ; Analysis & Synthesis Summary                                                    ;
 +------------------------------------+--------------------------------------------+
-; Analysis & Synthesis Status        ; Successful - Tue Jul 24 17:39:49 2018      ;
+; Analysis & Synthesis Status        ; Successful - Tue Jul 24 18:42:14 2018      ;
 ; Quartus II 64-Bit Version          ; 13.1.0 Build 162 10/23/2013 SJ Web Edition ;
 ; Revision Name                      ; SoC_Brain                                  ;
 ; Top-level Entity Name              ; FPGA_Processing                            ;
 ; Family                             ; Cyclone IV E                               ;
-; Total logic elements               ; 1,835                                      ;
-;     Total combinational functions  ; 1,710                                      ;
+; Total logic elements               ; 1,825                                      ;
+;     Total combinational functions  ; 1,700                                      ;
 ;     Dedicated logic registers      ; 310                                        ;
 ; Total registers                    ; 310                                        ;
 ; Total pins                         ; 60                                         ;
@@ -256,17 +256,17 @@ applicable agreement for further details.
 +---------------------------------------------+---------------------------------------------------------------------------------+
 ; Resource                                    ; Usage                                                                           ;
 +---------------------------------------------+---------------------------------------------------------------------------------+
-; Estimated Total logic elements              ; 1,835                                                                           ;
+; Estimated Total logic elements              ; 1,825                                                                           ;
 ;                                             ;                                                                                 ;
-; Total combinational functions               ; 1710                                                                            ;
+; Total combinational functions               ; 1700                                                                            ;
 ; Logic element usage by number of LUT inputs ;                                                                                 ;
-;     -- 4 input functions                    ; 490                                                                             ;
-;     -- 3 input functions                    ; 905                                                                             ;
-;     -- <=2 input functions                  ; 315                                                                             ;
+;     -- 4 input functions                    ; 486                                                                             ;
+;     -- 3 input functions                    ; 900                                                                             ;
+;     -- <=2 input functions                  ; 314                                                                             ;
 ;                                             ;                                                                                 ;
 ; Logic elements by mode                      ;                                                                                 ;
-;     -- normal mode                          ; 984                                                                             ;
-;     -- arithmetic mode                      ; 726                                                                             ;
+;     -- normal mode                          ; 980                                                                             ;
+;     -- arithmetic mode                      ; 720                                                                             ;
 ;                                             ;                                                                                 ;
 ; Total registers                             ; 310                                                                             ;
 ;     -- Dedicated logic registers            ; 310                                                                             ;
@@ -280,8 +280,8 @@ applicable agreement for further details.
 ;                                             ;                                                                                 ;
 ; Maximum fan-out node                        ; pll:pll_inst|altpll:altpll_component|pll_altpll:auto_generated|wire_pll1_clk[0] ;
 ; Maximum fan-out                             ; 270                                                                             ;
-; Total fan-out                               ; 8814                                                                            ;
-; Average fan-out                             ; 3.82                                                                            ;
+; Total fan-out                               ; 8795                                                                            ;
+; Average fan-out                             ; 3.83                                                                            ;
 +---------------------------------------------+---------------------------------------------------------------------------------+
 
 
@@ -290,7 +290,7 @@ applicable agreement for further details.
 +---------------------------------------------+-------------------+--------------+-------------+--------------+---------+-----------+------+--------------+---------------------------------------------------------------------------------------------------------------------+--------------+
 ; Compilation Hierarchy Node                  ; LC Combinationals ; LC Registers ; Memory Bits ; DSP Elements ; DSP 9x9 ; DSP 18x18 ; Pins ; Virtual Pins ; Full Hierarchy Name                                                                                                 ; Library Name ;
 +---------------------------------------------+-------------------+--------------+-------------+--------------+---------+-----------+------+--------------+---------------------------------------------------------------------------------------------------------------------+--------------+
-; |FPGA_Processing                            ; 1710 (866)        ; 310 (302)    ; 1048576     ; 19           ; 5       ; 7         ; 60   ; 0            ; |FPGA_Processing                                                                                                    ; work         ;
+; |FPGA_Processing                            ; 1700 (856)        ; 310 (302)    ; 1048576     ; 19           ; 5       ; 7         ; 60   ; 0            ; |FPGA_Processing                                                                                                    ; work         ;
 ;    |RAM:RAM_inst|                           ; 97 (0)            ; 8 (0)        ; 1048576     ; 0            ; 0       ; 0         ; 0    ; 0            ; |FPGA_Processing|RAM:RAM_inst                                                                                       ; work         ;
 ;       |altsyncram:altsyncram_component|     ; 97 (0)            ; 8 (0)        ; 1048576     ; 0            ; 0       ; 0         ; 0    ; 0            ; |FPGA_Processing|RAM:RAM_inst|altsyncram:altsyncram_component                                                       ; work         ;
 ;          |altsyncram_59g1:auto_generated|   ; 97 (1)            ; 8 (8)        ; 1048576     ; 0            ; 0       ; 0         ; 0    ; 0            ; |FPGA_Processing|RAM:RAM_inst|altsyncram:altsyncram_component|altsyncram_59g1:auto_generated                        ; work         ;
@@ -372,9 +372,6 @@ Note: number of Embedded Multiplier Blocks used is only available after a succes
 ; Register name                           ; Reason for Removal                     ;
 +-----------------------------------------+----------------------------------------+
 ; const5[0,1]                             ; Stuck at GND due to stuck port data_in ;
-; g[6]                                    ; Stuck at GND due to stuck port data_in ;
-; b[5]                                    ; Stuck at GND due to stuck port data_in ;
-; vdata[5,12]                             ; Stuck at GND due to stuck port data_in ;
 ; const5[2]                               ; Stuck at VCC due to stuck port data_in ;
 ; const5[3..8]                            ; Stuck at GND due to stuck port data_in ;
 ; const5[9]                               ; Stuck at VCC due to stuck port data_in ;
@@ -412,11 +409,11 @@ Note: number of Embedded Multiplier Blocks used is only available after a succes
 ; h_add[1,3,5]                            ; Merged with h_add[7]                   ;
 ; h_add[2,4]                              ; Merged with h_add[6]                   ;
 ; g[0..3]                                 ; Merged with g[4]                       ;
-; r[0,1]                                  ; Merged with r[2]                       ;
+; r[0..3]                                 ; Merged with r[4]                       ;
 ; b[0..3]                                 ; Merged with b[4]                       ;
 ; vdata[1..4]                             ; Merged with vdata[0]                   ;
-; vdata[6..9]                             ; Merged with vdata[10]                  ;
-; vdata[14,15]                            ; Merged with vdata[13]                  ;
+; vdata[6..9]                             ; Merged with vdata[5]                   ;
+; vdata[12..15]                           ; Merged with vdata[11]                  ;
 ; Cb_Data2[7]                             ; Merged with Cb_Data1[7]                ;
 ; Cb_Data2[6]                             ; Merged with Cb_Data1[6]                ;
 ; Cb_Data2[5]                             ; Merged with Cb_Data1[5]                ;
@@ -453,10 +450,6 @@ Note: number of Embedded Multiplier Blocks used is only available after a succes
 +---------------+---------------------------+----------------------------------------+
 ; Register name ; Reason for Removal        ; Registers Removed due to This Register ;
 +---------------+---------------------------+----------------------------------------+
-; g[6]          ; Stuck at GND              ; vdata[12]                              ;
-;               ; due to stuck port data_in ;                                        ;
-; b[5]          ; Stuck at GND              ; vdata[5]                               ;
-;               ; due to stuck port data_in ;                                        ;
 ; A_int[4]      ; Stuck at GND              ; X_int[3]                               ;
 ;               ; due to stuck port data_in ;                                        ;
 +---------------+---------------------------+----------------------------------------+
@@ -495,22 +488,22 @@ Note: number of Embedded Multiplier Blocks used is only available after a succes
 +--------------------+-----------+---------------+----------------------+------------------------+------------+--------------------------------+
 ; Multiplexer Inputs ; Bus Width ; Baseline Area ; Area if Restructured ; Saving if Restructured ; Registered ; Example Multiplexer Output     ;
 +--------------------+-----------+---------------+----------------------+------------------------+------------+--------------------------------+
-; 3:1                ; 6 bits    ; 12 LEs        ; 12 LEs               ; 0 LEs                  ; Yes        ; |FPGA_Processing|min[6]        ;
-; 3:1                ; 6 bits    ; 12 LEs        ; 12 LEs               ; 0 LEs                  ; Yes        ; |FPGA_Processing|max[7]        ;
-; 4:1                ; 2 bits    ; 4 LEs         ; 4 LEs                ; 0 LEs                  ; Yes        ; |FPGA_Processing|r[2]          ;
+; 3:1                ; 6 bits    ; 12 LEs        ; 12 LEs               ; 0 LEs                  ; Yes        ; |FPGA_Processing|min[7]        ;
+; 3:1                ; 6 bits    ; 12 LEs        ; 12 LEs               ; 0 LEs                  ; Yes        ; |FPGA_Processing|max[5]        ;
+; 4:1                ; 2 bits    ; 4 LEs         ; 4 LEs                ; 0 LEs                  ; Yes        ; |FPGA_Processing|g[4]          ;
 ; 4:1                ; 2 bits    ; 4 LEs         ; 4 LEs                ; 0 LEs                  ; Yes        ; |FPGA_Processing|min[4]        ;
-; 4:1                ; 7 bits    ; 14 LEs        ; 0 LEs                ; 14 LEs                 ; Yes        ; |FPGA_Processing|v[4]          ;
+; 4:1                ; 7 bits    ; 14 LEs        ; 0 LEs                ; 14 LEs                 ; Yes        ; |FPGA_Processing|v[5]          ;
 ; 4:1                ; 2 bits    ; 4 LEs         ; 4 LEs                ; 0 LEs                  ; Yes        ; |FPGA_Processing|max[4]        ;
-; 3:1                ; 18 bits   ; 36 LEs        ; 18 LEs               ; 18 LEs                 ; Yes        ; |FPGA_Processing|X_int[14]     ;
-; 3:1                ; 15 bits   ; 30 LEs        ; 15 LEs               ; 15 LEs                 ; Yes        ; |FPGA_Processing|vadr[2]       ;
-; 32:1               ; 5 bits    ; 105 LEs       ; 20 LEs               ; 85 LEs                 ; Yes        ; |FPGA_Processing|ram_B[6]      ;
-; 32:1               ; 3 bits    ; 63 LEs        ; 6 LEs                ; 57 LEs                 ; Yes        ; |FPGA_Processing|ram_G[0]      ;
+; 3:1                ; 18 bits   ; 36 LEs        ; 18 LEs               ; 18 LEs                 ; Yes        ; |FPGA_Processing|X_int[8]      ;
+; 3:1                ; 15 bits   ; 30 LEs        ; 15 LEs               ; 15 LEs                 ; Yes        ; |FPGA_Processing|vadr[13]      ;
+; 32:1               ; 5 bits    ; 105 LEs       ; 20 LEs               ; 85 LEs                 ; Yes        ; |FPGA_Processing|ram_B[5]      ;
+; 32:1               ; 3 bits    ; 63 LEs        ; 6 LEs                ; 57 LEs                 ; Yes        ; |FPGA_Processing|ram_B[0]      ;
 ; 32:1               ; 12 bits   ; 252 LEs       ; 36 LEs               ; 216 LEs                ; Yes        ; |FPGA_Processing|ram_R[4]      ;
-; 6:1                ; 3 bits    ; 12 LEs        ; 9 LEs                ; 3 LEs                  ; Yes        ; |FPGA_Processing|h_add[7]      ;
+; 6:1                ; 3 bits    ; 12 LEs        ; 9 LEs                ; 3 LEs                  ; Yes        ; |FPGA_Processing|h_add[0]      ;
 ; 6:1                ; 17 bits   ; 68 LEs        ; 17 LEs               ; 51 LEs                 ; Yes        ; |FPGA_Processing|h_divisor[0]  ;
 ; 6:1                ; 2 bits    ; 8 LEs         ; 8 LEs                ; 0 LEs                  ; Yes        ; |FPGA_Processing|g[5]          ;
 ; 33:1               ; 4 bits    ; 88 LEs        ; 16 LEs               ; 72 LEs                 ; Yes        ; |FPGA_Processing|ram_state[4]  ;
-; 32:1               ; 16 bits   ; 336 LEs       ; 64 LEs               ; 272 LEs                ; Yes        ; |FPGA_Processing|ram_R[9]      ;
+; 32:1               ; 16 bits   ; 336 LEs       ; 64 LEs               ; 272 LEs                ; Yes        ; |FPGA_Processing|ram_G[8]      ;
 ; 8:1                ; 8 bits    ; 40 LEs        ; 32 LEs               ; 8 LEs                  ; Yes        ; |FPGA_Processing|h_dividend[0] ;
 ; 3:1                ; 2 bits    ; 4 LEs         ; 2 LEs                ; 2 LEs                  ; No         ; |FPGA_Processing|ns            ;
 ; 3:1                ; 5 bits    ; 10 LEs        ; 10 LEs               ; 0 LEs                  ; No         ; |FPGA_Processing|R[1]          ;
@@ -1398,7 +1391,7 @@ Note: In order to hide this table in the UI and the text report file, please set
 +----------------+--------------+
 ; Partition Name ; Elapsed Time ;
 +----------------+--------------+
-; Top            ; 00:00:11     ;
+; Top            ; 00:00:07     ;
 +----------------+--------------+
 
 
@@ -1408,7 +1401,7 @@ Note: In order to hide this table in the UI and the text report file, please set
 Info: *******************************************************************
 Info: Running Quartus II 64-Bit Analysis & Synthesis
     Info: Version 13.1.0 Build 162 10/23/2013 SJ Web Edition
-    Info: Processing started: Tue Jul 24 17:39:31 2018
+    Info: Processing started: Tue Jul 24 18:42:02 2018
 Info: Command: quartus_map --read_settings_files=on --write_settings_files=off SoC_Brain -c SoC_Brain
 Info (11104): Parallel Compilation has detected 4 hyper-threaded processors. However, the extra hyper-threaded processors will not be used by default. Parallel Compilation will use 2 of the 2 physical processors detected instead.
 Info (12021): Found 1 design units, including 1 entities, in source file ram.v
@@ -1433,11 +1426,10 @@ Warning (10230): Verilog HDL assignment warning at FPGA_Processing.v(158): trunc
 Warning (10230): Verilog HDL assignment warning at FPGA_Processing.v(159): truncated value with size 32 to match size of target (21)
 Warning (10230): Verilog HDL assignment warning at FPGA_Processing.v(275): truncated value with size 32 to match size of target (8)
 Warning (10230): Verilog HDL assignment warning at FPGA_Processing.v(276): truncated value with size 32 to match size of target (8)
-Warning (10230): Verilog HDL assignment warning at FPGA_Processing.v(285): truncated value with size 32 to match size of target (6)
-Warning (10230): Verilog HDL assignment warning at FPGA_Processing.v(286): truncated value with size 32 to match size of target (6)
+Warning (10230): Verilog HDL assignment warning at FPGA_Processing.v(285): truncated value with size 32 to match size of target (5)
+Warning (10230): Verilog HDL assignment warning at FPGA_Processing.v(286): truncated value with size 32 to match size of target (5)
 Critical Warning (10237): Verilog HDL warning at FPGA_Processing.v(288): can't infer register for assignment in edge-triggered always construct because the clock isn't obvious. Generated combinational logic instead
 Critical Warning (10237): Verilog HDL warning at FPGA_Processing.v(289): can't infer register for assignment in edge-triggered always construct because the clock isn't obvious. Generated combinational logic instead
-Warning (10230): Verilog HDL assignment warning at FPGA_Processing.v(338): truncated value with size 19 to match size of target (16)
 Warning (10235): Verilog HDL Always Construct warning at FPGA_Processing.v(489): variable "vdd" is read inside the Always Construct but isn't in the Always Construct's Event Control
 Warning (10766): Verilog HDL Synthesis Attribute warning at FPGA_Processing.v(489): ignoring full_case attribute on case statement with explicit default case item
 Warning (10230): Verilog HDL assignment warning at FPGA_Processing.v(614): truncated value with size 32 to match size of target (16)
@@ -1766,19 +1758,19 @@ Warning (21074): Design contains 8 input pin(s) that do not drive logic
     Warning (15610): No output dependent on input pin "vpo[5]"
     Warning (15610): No output dependent on input pin "vpo[6]"
     Warning (15610): No output dependent on input pin "vpo[7]"
-Info (21057): Implemented 2050 device resources after synthesis - the final resource count might be different
+Info (21057): Implemented 2040 device resources after synthesis - the final resource count might be different
     Info (21058): Implemented 40 input pins
     Info (21059): Implemented 4 output pins
     Info (21060): Implemented 16 bidirectional pins
-    Info (21061): Implemented 1842 logic cells
+    Info (21061): Implemented 1832 logic cells
     Info (21064): Implemented 128 RAM segments
     Info (21065): Implemented 1 PLLs
     Info (21062): Implemented 19 DSP elements
-Info: Quartus II 64-Bit Analysis & Synthesis was successful. 0 errors, 133 warnings
-    Info: Peak virtual memory: 4699 megabytes
-    Info: Processing ended: Tue Jul 24 17:39:49 2018
-    Info: Elapsed time: 00:00:18
-    Info: Total CPU time (on all processors): 00:00:13
+Info: Quartus II 64-Bit Analysis & Synthesis was successful. 0 errors, 132 warnings
+    Info: Peak virtual memory: 4711 megabytes
+    Info: Processing ended: Tue Jul 24 18:42:14 2018
+    Info: Elapsed time: 00:00:12
+    Info: Total CPU time (on all processors): 00:00:10
 
 
 +------------------------------------------+

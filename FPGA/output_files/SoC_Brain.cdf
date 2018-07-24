@@ -4,7 +4,7 @@ JedecChain;
 	DefaultMfr(6E);
 
 	P ActionCode(Cfg)
-		Device PartName(EP4CE75) Path("C:/Users/tony9/Desktop/GitHub/SoC_2018/FPGA/") File("Huro.jic") MfrSpec(OpMask(1) SEC_Device(EPCS64) Child_OpMask(1 1));
+		Device PartName(EP4CE75) Path("C:/Users/tony9/Desktop/GitHub/SoC_2018/FPGA/output_files/") File("Huro.jic") MfrSpec(OpMask(1) SEC_Device(EPCS64) Child_OpMask(1 1));
 
 ChainEnd;
 

@@ -1,5 +1,5 @@
 Flow report for SoC_Brain
-Tue Jul 24 17:40:56 2018
+Tue Jul 24 18:43:35 2018
 Quartus II 64-Bit Version 13.1.0 Build 162 10/23/2013 SJ Web Edition
 
 
@@ -40,15 +40,15 @@ applicable agreement for further details.
 +---------------------------------------------------------------------------------+
 ; Flow Summary                                                                    ;
 +------------------------------------+--------------------------------------------+
-; Flow Status                        ; Successful - Tue Jul 24 17:40:41 2018      ;
+; Flow Status                        ; Successful - Tue Jul 24 18:43:20 2018      ;
 ; Quartus II 64-Bit Version          ; 13.1.0 Build 162 10/23/2013 SJ Web Edition ;
 ; Revision Name                      ; SoC_Brain                                  ;
 ; Top-level Entity Name              ; FPGA_Processing                            ;
 ; Family                             ; Cyclone IV E                               ;
 ; Device                             ; EP4CE75U19I7                               ;
 ; Timing Models                      ; Final                                      ;
-; Total logic elements               ; 1,783 / 75,408 ( 2 % )                     ;
-;     Total combinational functions  ; 1,710 / 75,408 ( 2 % )                     ;
+; Total logic elements               ; 1,769 / 75,408 ( 2 % )                     ;
+;     Total combinational functions  ; 1,700 / 75,408 ( 2 % )                     ;
 ;     Dedicated logic registers      ; 310 / 75,408 ( < 1 % )                     ;
 ; Total registers                    ; 310                                        ;
 ; Total pins                         ; 60 / 293 ( 20 % )                          ;
@@ -64,7 +64,7 @@ applicable agreement for further details.
 +-------------------+---------------------+
 ; Option            ; Setting             ;
 +-------------------+---------------------+
-; Start date & time ; 07/24/2018 17:39:32 ;
+; Start date & time ; 07/24/2018 18:42:03 ;
 ; Main task         ; Compilation         ;
 ; Revision Name     ; SoC_Brain           ;
 +-------------------+---------------------+
@@ -75,7 +75,7 @@ applicable agreement for further details.
 +-------------------------------------+---------------------------------------+---------------+-----------------+------------+
 ; Assignment Name                     ; Value                                 ; Default Value ; Entity Name     ; Section Id ;
 +-------------------------------------+---------------------------------------+---------------+-----------------+------------+
-; COMPILER_SIGNATURE_ID               ; 22853840796414.153242157119676        ; --            ; --              ; --         ;
+; COMPILER_SIGNATURE_ID               ; 22853840796414.153242532302192        ; --            ; --              ; --         ;
 ; ENABLE_SIGNALTAP                    ; On                                    ; --            ; --              ; --         ;
 ; IP_TOOL_NAME                        ; ALTPLL                                ; --            ; --              ; --         ;
 ; IP_TOOL_VERSION                     ; 13.1                                  ; --            ; --              ; --         ;
@@ -100,11 +100,11 @@ applicable agreement for further details.
 +---------------------------+--------------+-------------------------+---------------------+------------------------------------+
 ; Module Name               ; Elapsed Time ; Average Processors Used ; Peak Virtual Memory ; Total CPU Time (on all processors) ;
 +---------------------------+--------------+-------------------------+---------------------+------------------------------------+
-; Analysis & Synthesis      ; 00:00:16     ; 1.0                     ; 4699 MB             ; 00:00:12                           ;
-; Fitter                    ; 00:00:40     ; 1.5                     ; 5390 MB             ; 00:00:46                           ;
-; Assembler                 ; 00:00:06     ; 1.0                     ; 4633 MB             ; 00:00:05                           ;
-; TimeQuest Timing Analyzer ; 00:00:12     ; 1.3                     ; 4771 MB             ; 00:00:10                           ;
-; Total                     ; 00:01:14     ; --                      ; --                  ; 00:01:13                           ;
+; Analysis & Synthesis      ; 00:00:11     ; 1.0                     ; 4710 MB             ; 00:00:09                           ;
+; Fitter                    ; 00:00:53     ; 1.5                     ; 5387 MB             ; 00:00:59                           ;
+; Assembler                 ; 00:00:06     ; 1.0                     ; 4633 MB             ; 00:00:06                           ;
+; TimeQuest Timing Analyzer ; 00:00:13     ; 1.5                     ; 4770 MB             ; 00:00:11                           ;
+; Total                     ; 00:01:23     ; --                      ; --                  ; 00:01:25                           ;
 +---------------------------+--------------+-------------------------+---------------------+------------------------------------+
 
 
