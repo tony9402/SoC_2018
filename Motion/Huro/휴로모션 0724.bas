@@ -3417,36 +3417,50 @@ Number_Play: '  BUTTON_NO = 숫자대입
     WAIT
 
     SPEED 10
-    MOVE G6D, 90, 100, 115, 105, 114
-    MOVE G6A,113,  76, 145,  93,  94
+    MOVE G6D, 90, 95, 108, 125, 114
+    MOVE G6A,115,  76, 140, 108,  94
     WAIT
 
     GOSUB Leg_motor_mode2
 
 
     SPEED 12
-    MOVE G6D,  80, 30, 155, 150, 114,
-    MOVE G6A,113,  65, 155,  90,  94
+    MOVE G6D,  90, 30, 145, 155, 114,
+    MOVE G6A,112,  65, 135,  127,  94
     WAIT
 
     GOSUB Leg_motor_mode2
+    
+    '다리먼저 뻗고
+    SPEED 7
+    MOVE G6D, 90,  30, 165, 158, 114,
+    MOVE G6A,113,  95, 100,  128,  94
+    MOVE G6B,70,50
+    MOVE G6C,70,40
+    WAIT
 
     SPEED 7
-    MOVE G6D,  80, 30, 175, 150, 114,
-    MOVE G6A,113,  115, 65,  140,  94
+    MOVE G6D,  90, 10, 165, 170, 114,
+    MOVE G6A,113,  115, 65,  144,  94
     MOVE G6B,70,50
     MOVE G6C,70,40
     WAIT
 
     GOSUB Leg_motor_mode3
     SPEED 5
-    MOVE G6D,90, 20, 150, 150, 110
-    MOVE G6A,110,  155, 35,  120,94
+    MOVE G6D,90, 10, 170, 150, 105
+    MOVE G6A,115,  155, 35, 125,100
     MOVE G6C,100,50
     MOVE G6B,140,40
     WAIT
 
     '****************************
+	SPEED 8
+    MOVE G6D,95, 30, 150, 150, 100
+    MOVE G6A,108,  155, 60,  110,100
+    MOVE G6C,140,50
+    MOVE G6B,100,40
+    WAIT
 
     SPEED 8
     MOVE G6D,100, 30, 150, 150, 100
@@ -3456,26 +3470,26 @@ Number_Play: '  BUTTON_NO = 숫자대입
     WAIT
 
     SPEED 10
-    MOVE G6D,114, 70, 130, 150, 94
-    MOVE G6A,80,  125, 140,  85,114
+    MOVE G6D,107, 70, 130, 135, 94
+    MOVE G6A,90,  135, 130,  65,114
     MOVE G6C,170,50
     MOVE G6B,100,40
     WAIT
 
     GOSUB Leg_motor_mode2	
     SPEED 10
-    MOVE G6D,114, 70, 130, 150, 94
-    MOVE G6A,80,  125, 50,  150,114
+    MOVE G6D,114, 70, 130, 140, 94
+    MOVE G6A,90,  125, 50,  140,114
     WAIT
 
     SPEED 9
     MOVE G6D,114, 75, 130, 120, 94
-    MOVE G6A,80,  85, 90,  150,114
+    MOVE G6A,90,  85, 90,  150,114
     WAIT
 
     SPEED 8
     MOVE G6D,112, 80, 130, 110, 94
-    MOVE G6A,80,  75,130,  115,114
+    MOVE G6A,90,  75,130,  115,114
     MOVE G6C,130,50
     MOVE G6B,100,40
     WAIT
@@ -3593,27 +3607,27 @@ Number_Play: '  BUTTON_NO = 숫자대입
     WAIT
 
     SPEED 8
-    MOVE G6D, 90, 100, 110, 100, 114
-    MOVE G6A,113,  78, 146,  93,  94
+    MOVE G6D, 90, 110, 100, 103, 114
+    MOVE G6A,113,  78, 146,  87,  94
     WAIT
 
     GOSUB Leg_motor_mode2
 
     SPEED 8
-    MOVE G6D, 90, 140, 35, 130, 114
-    MOVE G6A,113,  71, 155,  90,  94
+    MOVE G6D, 90, 140, 35, 135, 114
+    MOVE G6A,113,  71, 155,  87,  94
     WAIT
 
 
     SPEED 12
-    MOVE G6D,  80, 55, 130, 140, 114,
-    MOVE G6A,113,  70, 155,  90,  94
+    MOVE G6D, 85, 75, 100, 160, 114,
+    MOVE G6A,113,  70, 155,  86,  94
     WAIT
 
     GOSUB Leg_motor_mode3
 
     SPEED 7
-    MOVE G6D, 105, 75, 100, 155, 100,
+    MOVE G6D, 105, 55, 110, 160, 100,
     MOVE G6A,95,  90, 165,  70, 100
     MOVE G6C,160,50
     MOVE G6B,160,40
@@ -3630,7 +3644,7 @@ Number_Play: '  BUTTON_NO = 숫자대입
     GOSUB Leg_motor_mode2	
     SPEED 8
     MOVE G6D, 114, 90, 100, 150,95,
-    MOVE G6A,95,  90, 165,  70, 105
+    MOVE G6A,95,  130, 110,  90, 105
     WAIT
 
     SPEED 12
@@ -4101,7 +4115,7 @@ MAIN_2:
     'MUSIC "F"
     'DELAY 50
     DELAY 3000
-    GOSUB 오른쪽옆으로20
+    GOSUB 계단오른발내리기3cm
     DELAY 500
     'GOSUB 오른쪽턴20
     'DELAY 100
