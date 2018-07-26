@@ -20,52 +20,48 @@
 #define color(r,g,b) ((((r)>>3)&0x001f)<<0xb)|((((g)>>2)&0x003f)<<0x5)|((((b)>>3)&0x001f))
 void show_help(void)
 {
-	printf("================================================================\n");
-	printf("Graphic API Example (Ver : %s)\n", AMAZON2_GRAPHIC_VERSION);
-	printf("================================================================\n");
-	printf("h : show this message\n");
-	printf("0 : flip \n");
-	printf("a : direct camera display on\n");
-	printf("d : direct camera display off\n");
-	printf("1 : clear screen \n");
-	printf("2 : draw_rectfill(10, 200, 100, 100, MAKE_COLORREF(255, 0, 0)); \n");
-	printf("3 : draw_rectfill(110, 200, 100, 100, MAKE_COLORREF(0, 255, 0)); \n");
-	printf("4 : draw_rectfill(210, 200, 100, 100, MAKE_COLORREF(0, 0, 255)); \n");
-	printf("5 : read fpga video data \n");
-	printf("6 : draw fpga video data < Original > (180 x 120)\n");
-	printf("7 : draw fpga buffer data \n");
-	printf("8 : bmp(/root/img/AMAZON2.bmp) load \n");
-	printf("9 : bmp(/root/img/AMAZON2.bmp) draw \n");
-	printf("m : Demo \n");
-	printf("q : exit \n");
-	printf("x : exit \n");
-	printf("z : exit \n");
-	printf("================================================================\n");
+printf("================================================================\n");
+printf("Graphic API Example (Ver : %s)\n", AMAZON2_GRAPHIC_VERSION);
+printf("================================================================\n");
+printf("h : show this message\n");
+printf("0 : flip \n");
+printf("a : direct camera display on\n");
+printf("d : direct camera display off\n");
+printf("1 : clear screen \n");
+printf("2 : draw_rectfill(10, 200, 100, 100, MAKE_COLORREF(255, 0, 0)); \n");
+printf("3 : draw_rectfill(110, 200, 100, 100, MAKE_COLORREF(0, 255, 0)); \n");
+printf("4 : draw_rectfill(210, 200, 100, 100, MAKE_COLORREF(0, 0, 255)); \n");
+printf("5 : read fpga video data \n");
+printf("6 : draw fpga video data < Original > (180 x 120)\n");
+printf("7 : draw fpga buffer data \n");
+printf("8 : bmp(/root/img/AMAZON2.bmp) load \n");
+printf("9 : bmp(/root/img/AMAZON2.bmp) draw \n");
+printf("m : Demo \n");
+printf("q : exit \n");
+printf("x : exit \n");
+printf("z : exit \n");
+printf("================================================================\n");
 }
 
 static void demo(void)
 {
-	
+
 	U16* fpga_videodata = (U16*)malloc(180 * 120 * 2);
 	int x = 0;
 	int y = 0;
-	int r,g,b,h,s,v;
-	r = g = b =h=s=v= 0;
-	short cntRp=0,cntBp=0,cntDp=0;
+	int r, g, b, h, s, v;
+	r = g = b = h = s = v = 0;
+	short cntBp = 0, cntDp = 0;
 
 	short i, j;
 	HSV hsv;
-	short cnt[3][3] = {0};
+	short cnt[3][2] = { 0 };
 	printf("Demo Start\n");
 	while (1)
 	{
-		for (x = 0; x < 3; x++) {
-			for (y = 0; y < 3; y++) {
-				cnt[x][y] = 0;
-			}
-		}
+		cnt[0][0] = cnt[0][1] = cnt[1][0] = cnt[1][1] = cnt[2][0] = cnt[2][1] = 0;
 
-		
+
 		clear_screen();
 		read_fpga_video_data(fpga_videodata);
 		for (r = 0; r < 4; r++) {
@@ -73,7 +69,7 @@ static void demo(void)
 				cntBp = cntDp = 0;
 				for (i = 30 * r; i < 30 * r + 30; i++) {
 					for (j = 30 * g; j < 30 * g + 30; j++) {
-						if ((fpga_videodata[pos(i, j)] <= 0x001F)&&(fpga_videodata[pos(i,j)]!=0x0000)) {
+						if ((fpga_videodata[pos(i, j)] <= 0x001F) && (fpga_videodata[pos(i, j)] != 0x0000)) {
 							cntBp += 1;
 						}
 						else if ((fpga_videodata[pos(i, j)] == 0x0000)) {
@@ -81,49 +77,142 @@ static void demo(void)
 						}
 					}
 				}
-				if (cntBp + cntDp <= 300) {
+				if (cntBp + cntDp <= 400) {
 					for (i = 30 * r; i < 30 * r + 30; i++) {
 						for (j = 30 * g; j < 30 * g + 30; j++) {
 							fpga_videodata[pos(i, j)] = 0xffff;
 						}
 					}
-					
+
+				}
+				else if (cntBp > 100) {
+					for (i = 30 * r; i < 30 * r + 30; i++) {
+						for (j = 30 * g; j < 30 * g + 30; j++) {
+							fpga_videodata[pos(i, j)] = 0x001f;
+						}
+					}
 				}
 			}
 		}
 		for (i = 0; i < 120; i++) {
 			for (j = 0; j < 180; j++) {
-				if (j < 60) {
-					if (fpga_videodata[pos(i,j)]==0x0000) {
+				if (j < 40) {
+					if (fpga_videodata[pos(i, j)] == 0x0000) {
 						cnt[0][0] += 1;
 					}
 					if ((fpga_videodata[pos(i, j)] <= 0x001F) && (fpga_videodata[pos(i, j)] != 0x0000)) {
-						cnt[0][2] += 1;
+						cnt[0][1] += 1;
 					}
 				}
-				else if(j < 120) {
+				else if (j < 140) {
 					if (fpga_videodata[pos(i, j)] == 0x0000) {
 						cnt[1][0] += 1;
 					}
 					if ((fpga_videodata[pos(i, j)] <= 0x001F) && (fpga_videodata[pos(i, j)] != 0x0000)) {
-						cnt[1][2] += 1;
+						cnt[1][1] += 1;
 					}
 				}
-				else if (j<180){
+				else if (j < 180) {
 					if (fpga_videodata[pos(i, j)] == 0x0000) {
 						cnt[2][0] += 1;
 					}
 					if ((fpga_videodata[pos(i, j)] <= 0x001F) && (fpga_videodata[pos(i, j)] != 0x0000)) {
-						cnt[2][2] += 1;
+						cnt[2][1] += 1;
 					}
 				}
 			}
 		}
-		
+
 		draw_fpga_video_data_full(fpga_videodata);
 		flip();
 		printf("L_D=%d C_D=%d R_D=%d\n", cnt[0][0], cnt[1][0], cnt[2][0]);
-		printf("L_B=%d C_B=%d R_B=%d\n", cnt[0][2], cnt[1][2], cnt[2][2]);
+		printf("L_B=%d C_B=%d R_B=%d\n", cnt[0][1], cnt[1][1], cnt[2][1]);
+		if ((MAX3(cnt[0][0], cnt[1][0], cnt[2][0]) < 1000) && (MAX3(cnt[0][1], cnt[1][1], cnt[2][1]) < 500)) {
+			printf("nothing in there\n");
+			printf("max_D %d\n", (MAX3(cnt[0][0], cnt[1][0], cnt[2][0])));
+			printf("max_b %d\n", (MAX3(cnt[0][1], cnt[1][1], cnt[2][1])));
+		}
+		else if (MAX3(cnt[0][0], cnt[1][0], cnt[2][0]) == cnt[0][0]) {
+			if (MAX3(cnt[0][1], cnt[1][1], cnt[2][1]) == cnt[0][1]) {
+				if (cnt[0][0] > cnt[0][1]) {
+					printf("enemy detected in LEFT!TURN LEFT!\n");
+				}
+				else {
+					printf("blue detected in LEFT!TURN LEFT!\n");
+				}
+			}
+			else if (MAX3(cnt[0][1], cnt[1][1], cnt[2][1]) == cnt[1][1]) {
+				if (cnt[0][0] > cnt[1][1]) {
+					printf("enemy detected in LEFT!TURN LEFT!\n");
+				}
+				else {
+					printf("blue detected in CENTER!GO STRAIGHT!\n");
+				}
+
+			}
+			else if (MAX3(cnt[0][1], cnt[1][1], cnt[2][1]) == cnt[2][1]) {
+				if (cnt[0][0] > cnt[2][1]) {
+					printf("enemy detected in LEFT!TURN LEFT!\n");
+				}
+				else {
+					printf("blue detected in RIGHT!TURN RIGHT!\n");
+				}
+			}
+		}
+		else if (MAX3(cnt[0][0], cnt[1][0], cnt[2][0]) == cnt[1][0]) {
+			if (MAX3(cnt[0][1], cnt[1][1], cnt[2][1]) == cnt[0][1]) {
+				if (cnt[1][0] > cnt[0][1]) {
+					printf("enemy detected in CENTER!TURN ATTACK!\n");
+				}
+				else {
+					printf("blue detected in LEFT!TURN LEFT!\n");
+				}
+			}
+			else if (MAX3(cnt[0][1], cnt[1][1], cnt[2][1]) == cnt[1][1]) {
+				if (cnt[1][0] > cnt[1][1]) {
+					printf("enemy detected in CENTER!ATTACK!\n");
+				}
+				else {
+					printf("blue detected in CENTER!GO STRAIGHT!\n");
+				}
+
+			}
+			else if (MAX3(cnt[0][1], cnt[1][1], cnt[2][1]) == cnt[2][1]) {
+				if (cnt[1][0] > cnt[2][1]) {
+					printf("enemy detected in CENTER!ATTACK!\n");
+				}
+				else {
+					printf("blue detected in RIGHT!TURN RIGHT!\n");
+				}
+			}
+		}
+		else if (MAX3(cnt[0][0], cnt[1][0], cnt[2][0]) == cnt[2][0]) {
+			if (MAX3(cnt[0][1], cnt[1][1], cnt[2][1]) == cnt[0][1]) {
+				if (cnt[2][0] > cnt[0][1]) {
+					printf("enemy detected in RIGHT!TURN RIGHT!\n");
+				}
+				else {
+					printf("blue detected in LEFT!TURN LEFT!\n");
+				}
+			}
+			else if (MAX3(cnt[0][1], cnt[1][1], cnt[2][1]) == cnt[1][1]) {
+				if (cnt[2][0] > cnt[1][1]) {
+					printf("enemy detected in RIGHT!TURN RIGHT!\n");
+				}
+				else {
+					printf("blue detected in CENTER!GO STRAIGHT!\n");
+				}
+
+			}
+			else if (MAX3(cnt[0][1], cnt[1][1], cnt[2][1]) == cnt[2][1]) {
+				if (cnt[2][0] > cnt[2][1]) {
+					printf("enemy detected in RIGHT!TURN RIGHT!\n");
+				}
+				else {
+					printf("blue detected in RIGHT!TURN RIGHT!\n");
+				}
+			}
+		}
 		/*if (1)
 			break;*/
 	}

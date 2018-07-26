@@ -278,12 +278,12 @@ wire [7:0] V = max;
 wire[15:0] DecVData3={H[7:3],S[7:2],V[7:3]};
 
 // Find Colors using RGB Or HSV DATA
-reg [ 5:0] r,b;
-reg [ 6:0] g;
+reg [ 4:0] r,b;
+reg [ 5:0] g;
 reg [ 8:0] h,s;
-wire [ 5:0] D_br = (B<R)?(R-B):(B-R);
-wire [ 5:0] D_gb = (G/2>=B)?(G/2-B):(B-G/2);
-wire [ 5:0] D_rg = (R<G/2)?(G/2-R):(R-G/2);
+wire [ 4:0] D_br = (B<R)?(R-B):(B-R);
+wire [ 4:0] D_gb = (G/2>=B)?(G/2-B):(B-G/2);
+wire [ 4:0] D_rg = (R<G/2)?(G/2-R):(R-G/2);
 always @ (posedge Sys_clk or negedge resetx)begin
 h <= H[7:0];
 s <= S[7:0];

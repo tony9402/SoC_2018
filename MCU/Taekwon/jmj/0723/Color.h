@@ -1,8 +1,8 @@
 #ifndef __COLOR_H
 #define __COLOR_H
 
-#define MAX3(x,y,z)  ((x)>(y))?((x)>(z))?(x):(z):((y)>(z))?(y):(z)
-#define MIN3(x,y,z)  ((x)>(y))?((y)>(z))?(z):(y):((x)>(z))?(z):(x)
+#define MAX3(x,y,z)  (((x)>(y))?((x)>(z))?(x):(z):((y)>(z))?(y):(z))
+#define MIN3(x,y,z)  (((x)>(y))?((y)>(z))?(z):(y):((x)>(z))?(z):(x))
 #define exred(x)     ((x)&0xf800)>>11
 #define exgreen(x)   ((x)&0x07e0)>>5
 #define exblue(x)    ((x)&0x001f)>>0
