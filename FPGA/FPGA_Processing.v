@@ -421,7 +421,7 @@ reg [15:0] vadr;
 reg A_addr;
 always @(negedge resetx or posedge Sys_clk)
    if      (~resetx)           vdata <= 16'b0;
-	else if (href2_wr)          vdata <= DecVData4;
+	else if (href2_wr)          vdata <= erode_data;
 
 always @(negedge resetx or posedge clk_llc8)
    if      (~resetx)           vadr[14:0] <= 15'b0;
@@ -846,6 +846,102 @@ begin
 end
    
 assign AMAmem_waitx = waitx & waitx_d1 & waitx_d2 & waitx_d3 & waitx_d4 & waitx_d5 & waitx_d6 & waitx_d7 & waitx_d8 & waitx_d9 & waitx_d10;
+
+//-------------------------------------------------------------
+//erode - min(erode_R,G,B)
+//-------------------------------------------------------------
+
+reg[4:0] erode_R;
+reg[5:0] erode_G;
+reg[4:0] erode_B;
+reg[3:0] erode_state;
+reg [15:0] AMA_adr2;
+reg [14:0] Adr2;
+
+wire[15:0] erode_data={erode_R,erode_G,erode_B};
+
+always @(negedge resetx or posedge Sys_clk)
+begin
+   if (~resetx) erode_state[3:0] <= 4'b0000;
+   else if(Adr2[14:0] != AMAmem_adr[14:0]) 
+   begin
+      Adr2[14:0] <= AMAmem_adr[14:0];
+      erode_state[3:0] <= 4'b0001;
+   end
+   else if(ram_state[3:0] == 4'b0001)
+   begin
+      AMA_adr2 <= {A_addr, AMAmem_adr} - 'd181;
+      erode_R <= DecVData4[4:0];
+      erode_G <= DecVData4[10:5];
+      erode_B <= DecVData4[15:11];
+      erode_state[3:0] <= erode_state[3:0] + 'b1;
+   end //1
+	else if(ram_state[3:0] == 4'b0010)
+   begin
+      AMA_adr2 <= {A_addr, AMAmem_adr} + 'd1;
+      erode_R <= DecVData4[4:0] < erode_R ? DecVData4[4:0] : erode_R;
+      erode_G <= DecVData4[10:5] < erode_G ? DecVData4[10:5] : erode_G;
+      erode_B <= DecVData4[15:11] < erode_B ? DecVData4[15:11] : erode_B;
+      erode_state[3:0] <= erode_state[3:0] + 'b1;
+   end //2
+	else if(ram_state[3:0] == 4'b0011)
+   begin
+      AMA_adr2 <= {A_addr, AMAmem_adr} + 'd1;
+      erode_R <= DecVData4[4:0] < erode_R ? DecVData4[4:0] : erode_R;
+      erode_G <= DecVData4[10:5] < erode_G ? DecVData4[10:5] : erode_G;
+      erode_B <= DecVData4[15:11] < erode_B ? DecVData4[15:11] : erode_B;
+      erode_state[3:0] <= erode_state[3:0] + 'b1;
+   end //3
+	else if(ram_state[3:0] == 4'b0100)
+   begin
+      AMA_adr2 <= {A_addr, AMAmem_adr} + 'd178;
+      erode_R <= DecVData4[4:0] < erode_R ? DecVData4[4:0] : erode_R;
+      erode_G <= DecVData4[10:5] < erode_G ? DecVData4[10:5] : erode_G;
+      erode_B <= DecVData4[15:11] < erode_B ? DecVData4[15:11] : erode_B;
+      erode_state[3:0] <= erode_state[3:0] + 'b1;
+   end //4
+	else if(ram_state[3:0] == 4'b0101)
+   begin
+      AMA_adr2 <= {A_addr, AMAmem_adr} + 'd1;
+      erode_R <= DecVData4[4:0] < erode_R ? DecVData4[4:0] : erode_R;
+      erode_G <= DecVData4[10:5] < erode_G ? DecVData4[10:5] : erode_G;
+      erode_B <= DecVData4[15:11] < erode_B ? DecVData4[15:11] : erode_B;
+      erode_state[3:0] <= erode_state[3:0] + 'b1;
+   end //5
+	else if(ram_state[3:0] == 4'b0110)
+   begin
+      AMA_adr2 <= {A_addr, AMAmem_adr} + 'd1;
+      erode_R <= DecVData4[4:0] < erode_R ? DecVData4[4:0] : erode_R;
+      erode_G <= DecVData4[10:5] < erode_G ? DecVData4[10:5] : erode_G;
+      erode_B <= DecVData4[15:11] < erode_B ? DecVData4[15:11] : erode_B;
+      erode_state[3:0] <= erode_state[3:0] + 'b1;
+   end //6
+	else if(ram_state[3:0] == 4'b0111)
+   begin
+      AMA_adr2 <= {A_addr, AMAmem_adr} + 'd178;
+      erode_R <= DecVData4[4:0] < erode_R ? DecVData4[4:0] : erode_R;
+      erode_G <= DecVData4[10:5] < erode_G ? DecVData4[10:5] : erode_G;
+      erode_B <= DecVData4[15:11] < erode_B ? DecVData4[15:11] : erode_B;
+      erode_state[3:0] <= erode_state[3:0] + 'b1;
+   end //7
+	else if(ram_state[3:0] == 4'b1000)
+   begin
+      AMA_adr2 <= {A_addr, AMAmem_adr} + 'd1;
+      erode_R <= DecVData4[4:0] < erode_R ? DecVData4[4:0] : erode_R;
+      erode_G <= DecVData4[10:5] < erode_G ? DecVData4[10:5] : erode_G;
+      erode_B <= DecVData4[15:11] < erode_B ? DecVData4[15:11] : erode_B;
+      erode_state[3:0] <= erode_state[3:0] + 'b1;
+   end //8
+	else if(ram_state[3:0] == 4'b1001)
+   begin
+      AMA_adr2 <= {A_addr, AMAmem_adr} + 'd1;
+      erode_R <= DecVData4[4:0] < erode_R ? DecVData4[4:0] : erode_R;
+      erode_G <= DecVData4[10:5] < erode_G ? DecVData4[10:5] : erode_G;
+      erode_B <= DecVData4[15:11] < erode_B ? DecVData4[15:11] : erode_B;
+      erode_state[3:0] <= erode_state[3:0] + 'b1;
+   end //9
+end
+
 
 
 //-----------------------------------------------------------------
