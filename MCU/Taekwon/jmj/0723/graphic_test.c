@@ -85,7 +85,7 @@ static void demo(void)
 					}
 
 				}
-				else if (cntBp > 50) {
+				else if (cntBp > 100) {
 					for (i = 30 * r; i < 30 * r + 30; i++) {
 						for (j = 30 * g; j < 30 * g + 30; j++) {
 							fpga_videodata[pos(i, j)] = 0x001f;
@@ -96,7 +96,7 @@ static void demo(void)
 		}
 		for (i = 0; i < 120; i++) {
 			for (j = 0; j < 180; j++) {
-				if (j < 60) {
+				if (j < 40) {
 					if (fpga_videodata[pos(i, j)] == 0x0000) {
 						cnt[0][0] += 1;
 					}
@@ -104,7 +104,7 @@ static void demo(void)
 						cnt[0][1] += 1;
 					}
 				}
-				else if (j < 120) {
+				else if (j < 140) {
 					if (fpga_videodata[pos(i, j)] == 0x0000) {
 						cnt[1][0] += 1;
 					}
