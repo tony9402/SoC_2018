@@ -179,12 +179,12 @@ wire [ 4:0] B = (B_int[20]) ? 5'b0 : (B_int[19:18] == 2'b0) ? B_int[17:13] : 5'b
 wire [15:0] DecVData = {R,G,B};
 /////////////////////////////////////////////////////////////////////////////
 //Convert RGB565 to RGB888
-wire[ 7:0] R2 = (R << 3)|(R>>2);
-wire[ 7:0] G2 = (G << 2)|(G>>4);
-wire[ 7:0] B2 = (B << 3)|(B>>2);
-/*wire [ 7:0] R2 = {R[4:0],R[4:2]};
-wire [ 7:0] G2 = {G[5:0],G[5:4]};
-wire [ 7:0] B2 = {B[4:0],B[4:2]};*/
+wire[ 7:0] R2 = (R << 3)+R[4:2];
+wire[ 7:0] G2 = (G << 2)+G[5:4];
+wire[ 7:0] B2 = (B << 3)+B[4:2];
+/*wire[ 7:0] R2 = {R,R[4:2]};
+wire[ 7:0] G2 = {G,G[5:4]};
+wire[ 7:0] B2 = {B,B[4:2]};*/
 wire [24:0] DecVData2 = {R2,G2,B2};
 
 //Find max & min
@@ -278,9 +278,10 @@ wire [7:0] V = max;
 wire[15:0] DecVData3={H[7:3],S[7:2],V[7:3]};
 
 // Find Colors using RGB Or HSV DATA
-reg [ 4:0] r,b;
-reg [ 5:0] g;
-reg [ 8:0] h,s;
+/*reg [ 4:0] r,b;
+reg [ 5:0] g; */
+reg [ 7:0] h,s;
+reg [15:0] rgb;
 wire [ 4:0] D_br = (B<R)?(R-B):(B-R);
 wire [ 4:0] D_gb = (G/2>=B)?(G/2-B):(B-G/2);
 wire [ 4:0] D_rg = (R<G/2)?(G/2-R):(R-G/2);
@@ -289,53 +290,86 @@ h <= H[7:0];
 s <= S[7:0];
    if (~resetx)
 	 begin
-	 r <= 0; g = 0; b <=0;
+	 rgb <= 0;
 	 end
-	else if ((D_br <= 2)&&(D_gb <= 3)&&(D_rg <= 3)&&(R<8)&&(G<15)&&(B<8))
+	else if ((D_br<=2)&&(D_gb<=3)&&(D_rg<=3)&&(R<8)&&(G<15)&&(B<8))
 	 begin
-	 r <= 5'b00000;
+	 rgb <= 16'h0x0000;
+	 //rgb <= 16'b0000000000000000;
+	 /*r <= 5'b00000;
 	 g <= 6'b000000;
-    b <= 5'b00000;
+    b <= 5'b00000;*/
 	 end //Black
-	else if (((h<=15)||(220<=h))&&(30<s)&&(v<220))
+	else if (((h<=15)||(220<=h))&&(30<s)&&(v<200))
 	 begin
-	 r <= 5'b11111;
+	 rgb <= 16'h0xF800;
+	 //rgb <= 1111100000000000;
+	 /*r <= 5'b11111;
 	 g <= 6'b000000;
-	 b <= 5'b00000;
+	 b <= 5'b00000;*/
 	 end //Red
-	else if (((60<=h)&&(h<=110))&&(30<s)&&(v<220))
+	else if (((60<=h)&&(h<=120))&&(30<s)&&(v<200))
 	 begin
-	 r <= 5'b00000;
+	 rgb <= 16'h0x07E0;
+	 //rgb <= 0000011111100000;
+	 /*r <= 5'b00000;
 	 g <= 6'b111111;
-	 b <= 5'b00000;
-	 end //Green
-	else if (((170<=h)&&(h<=200))&&(30<s)&&(v<170))
+	 b <= 5'b00000;*/
+	 end //Green 
+	else if (((150<=h)&&(h<=190))&&(30<s)&&(v<200))
     begin
-	 r <= 5'b00000;
+	 rgb <= 16'h0x001F;
+	 //rgb <= 16'b0000000000011111;
+	 /*r <= 5'b00000;
 	 g <= 6'b000000;
-	 b <= 5'b11111;
+	 b <= 5'b11111;*/
 	 end //Blue
-   else if((25 < h)&&(h < 50))
+   else if(((25<h)&&(h<50))&&(30<s)&&(v<200))
 	 begin
-	 r <= 5'b11111;
+	 rgb <= 16'h0xFFE0;
+	 //rgb <= 16'b1111111111100000;
+	 /*r <= 5'b11111;
 	 g <= 6'b111111;
-	 b <= 5'b0; //Yellow
-	 end
-	else if((15 < h) && (h < 25)) 
+	 b <= 5'b0; */
+	 end //Yellow
+	else if(((15<h)&&(h<25))&&(30<s)&&(v<200)) 
 	 begin
-	 r <= 5'b11111;
+	 rgb <= 16'h0xFBE0;
+	 //rgb <= 16'b1111101111100000;
+	 /*r <= 5'b11111;
 	 g <= 6'b011111;
-	 b <= 5'b0; //Orenge
-	 end
+	 b <= 5'b0; */
+	 end //Orenge 
    else
 	 begin
-	 r <= 5'b11111;
+	 rgb <= 16'h0xFFFF;
+	 //rgb <= 16'b1111111111111111;
+	 /*r <= 5'b11111;
 	 g <= 6'b111111;
-    b <= 5'b11111;
+    b <= 5'b11111;*/
 	 end
 end
 
-wire [15:0] DecVData4 = {r,g,b};
+//wire [15:0] DecVData4 = {r,g,b};
+wire [15:0] DecVData4 = {rgb};
+
+/*reg [15:0] ram_rgb;
+always @(negedge resetx or posedge Sys_clk)
+begin
+   if (~resetx) ram_state[4:0] <= 5'b00000;
+   else if(Adr[14:0] != AMAmem_adr[14:0]) 
+   begin
+      Adr[14:0] <= AMAmem_adr[14:0];
+      ram_state[4:0] <= 5'b00111;
+   end
+	else if (ram_state[4:0] == 5'b01000 || ram_state[4:0] == 5'b01100 || ram_state[4:0] == 5'b01110 || ram_state[4:0] == 5'b10010)
+	begin
+	 if (ram_rgb == 16'h0xFFFF)
+	 begin
+	 rgb <= 16'h0xFFFF
+	 end
+	end
+end */
 
 // 180x120 write clock generation 
 wire vpo_wrx    = ~(vref & href2_wr & clk_llc8);
@@ -385,9 +419,9 @@ wire   vd_wrx    = ~(~vpo_wrxd1 & vpo_wrxd3);
 reg [15:0] vdata;
 reg [15:0] vadr;
 reg A_addr;
-always @(negedge resetx or posedge clk_llc8)
+always @(negedge resetx or posedge Sys_clk)
    if      (~resetx)           vdata <= 16'b0;
-	else if (href2_wr)          vdata <= DecVData4;
+	else if (href2_wr)          vdata <= erode_data;
 
 always @(negedge resetx or posedge clk_llc8)
    if      (~resetx)           vadr[14:0] <= 15'b0;
@@ -628,14 +662,14 @@ begin
    else if(ram_state[4:0] == 5'b00011)
    begin
       AMA_adr <= AMA_adr + 'd1;
-      ram_R <= ram_R + (vmem_q[4:0] +'d5);
-      ram_G <= ram_G + (vmem_q[10:5] +'d5);
-      ram_B <= ram_B + (vmem_q[15:11] +'d5);
+      ram_R <= ram_R + (vmem_q[4:0] *'b101);
+      ram_G <= ram_G + (vmem_q[10:5] *'d5);
+      ram_B <= ram_B + (vmem_q[15:11] *'d5);
       ram_state[4:0] <= ram_state[4:0] + 'b1;
    end //3
    else if(ram_state[4:0] == 5'b00100)
    begin
-      AMA_adr <= AMA_adr + 'd176;
+      AMA_adr <= AMA_adr + 'd1;
       ram_R <= ram_R + (vmem_q[4:0] << 1);
       ram_G <= ram_G + (vmem_q[10:5] << 1);
       ram_B <= ram_B + (vmem_q[15:11] << 1);
@@ -660,25 +694,25 @@ begin
    else if(ram_state[4:0] == 5'b00111)
    begin
       AMA_adr <= AMA_adr + 'd1;
-      ram_R <= ram_R + (vmem_q[4:0] +'d5);
-      ram_G <= ram_G + (vmem_q[10:5] +'d5);
-      ram_B <= ram_B + (vmem_q[15:11] +'d5);
+      ram_R <= ram_R + (vmem_q[4:0] *'d5);
+      ram_G <= ram_G + (vmem_q[10:5] *'d5);
+      ram_B <= ram_B + (vmem_q[15:11] *'d5);
       ram_state[4:0] <= ram_state[4:0] + 'b1;
    end //7
    else if(ram_state[4:0] == 5'b01000)
    begin
       AMA_adr <= AMA_adr + 'd1;
-      ram_R <= ram_R + (vmem_q[4:0] +'d9);
-      ram_G <= ram_G + (vmem_q[10:5] +'d9);
-      ram_B <= ram_B + (vmem_q[15:11] +'d9);
+      ram_R <= ram_R + (vmem_q[4:0] *'d9);
+      ram_G <= ram_G + (vmem_q[10:5] *'d9);
+      ram_B <= ram_B + (vmem_q[15:11] *'d9);
       ram_state[4:0] <= ram_state[4:0] + 'b1;
    end //8
    else if(ram_state[4:0] == 5'b01001)
    begin
       AMA_adr <= AMA_adr + 'd1;
-      ram_R <= ram_R + (vmem_q[4:0] +'d5);
-      ram_G <= ram_G + (vmem_q[10:5] +'d5);
-      ram_B <= ram_B + (vmem_q[15:11] +'d5);
+      ram_R <= ram_R + (vmem_q[4:0] *'d5);
+      ram_G <= ram_G + (vmem_q[10:5] *'d5);
+      ram_B <= ram_B + (vmem_q[15:11] *'d5);
       ram_state[4:0] <= ram_state[4:0] + 'b1;
    end //9
 	else if(ram_state[4:0] == 5'b01010)
@@ -692,17 +726,17 @@ begin
 	else if(ram_state[4:0] == 5'b01011)
    begin 
       AMA_adr <= AMA_adr + 'd176;
-      ram_R <= ram_R + (vmem_q[4:0] +'d5);
-      ram_G <= ram_G + (vmem_q[10:5] +'d5);
-      ram_B <= ram_B + (vmem_q[15:11] +'d5);
+      ram_R <= ram_R + (vmem_q[4:0] *'d5);
+      ram_G <= ram_G + (vmem_q[10:5] *'d5);
+      ram_B <= ram_B + (vmem_q[15:11] *'d5);
       ram_state[4:0] <= ram_state[4:0] + 'b1;
    end //11
 	else if(ram_state[4:0] == 5'b01100)
    begin 
       AMA_adr <= AMA_adr + 'd1;
-      ram_R <= ram_R + (vmem_q[4:0] +'d9);
-      ram_G <= ram_G + (vmem_q[10:5] +'d9);
-      ram_B <= ram_B + (vmem_q[15:11] +'d9);
+      ram_R <= ram_R + (vmem_q[4:0] *'d9);
+      ram_G <= ram_G + (vmem_q[10:5] *'d9);
+      ram_B <= ram_B + (vmem_q[15:11] *'d9);
       ram_state[4:0] <= ram_state[4:0] + 'b1;
    end //12
 	else if(ram_state[4:0] == 5'b01101)
@@ -716,22 +750,22 @@ begin
 	else if(ram_state[4:0] == 5'b01110)
    begin 
       AMA_adr <= AMA_adr + 'd1;
-      ram_R <= ram_R + (vmem_q[4:0] +'d9);
-      ram_G <= ram_G + (vmem_q[10:5] +'d9);
-      ram_B <= ram_B + (vmem_q[15:11] +'d9);
+      ram_R <= ram_R + (vmem_q[4:0] *'d9);
+      ram_G <= ram_G + (vmem_q[10:5] *'d9);
+      ram_B <= ram_B + (vmem_q[15:11] *'d9);
       ram_state[4:0] <= ram_state[4:0] + 'b1;
    end //14
 	else if(ram_state[4:0] == 5'b01111)
    begin 
       AMA_adr <= AMA_adr + 'd1;
-      ram_R <= ram_R + (vmem_q[4:0] +'d5);
-      ram_G <= ram_G + (vmem_q[10:5] +'d5);
-      ram_B <= ram_B + (vmem_q[15:11] +'d5);
+      ram_R <= ram_R + (vmem_q[4:0] *'d5);
+      ram_G <= ram_G + (vmem_q[10:5] *'d5);
+      ram_B <= ram_B + (vmem_q[15:11] *'d5);
       ram_state[4:0] <= ram_state[4:0] + 'b1;
    end //15
 	else if(ram_state[4:0] == 5'b10000)
    begin 
-      AMA_adr <= AMA_adr + 'd1;
+      AMA_adr <= AMA_adr + 'd176;
       ram_R <= ram_R + (vmem_q[4:0] << 1);
       ram_G <= ram_G + (vmem_q[10:5] << 1);
       ram_B <= ram_B + (vmem_q[15:11] << 1);
@@ -739,26 +773,26 @@ begin
    end //16
 	else if(ram_state[4:0] == 5'b10001)
    begin 
-      AMA_adr <= AMA_adr + 'd176;
-      ram_R <= ram_R + (vmem_q[4:0] +'d5);
-      ram_G <= ram_G + (vmem_q[10:5] +'d5);
-      ram_B <= ram_B + (vmem_q[15:11] +'d5);
+      AMA_adr <= AMA_adr + 'd1;
+      ram_R <= ram_R + (vmem_q[4:0] *'d5);
+      ram_G <= ram_G + (vmem_q[10:5] *'d5);
+      ram_B <= ram_B + (vmem_q[15:11] *'d5);
       ram_state[4:0] <= ram_state[4:0] + 'b1;
    end //17
 	else if(ram_state[4:0] == 5'b10010)
    begin 
       AMA_adr <= AMA_adr + 'd1;
-      ram_R <= ram_R + (vmem_q[4:0] +'d9);
-      ram_G <= ram_G + (vmem_q[10:5] +'d9);
-      ram_B <= ram_B + (vmem_q[15:11] +'d9);
+      ram_R <= ram_R + (vmem_q[4:0] *'d9);
+      ram_G <= ram_G + (vmem_q[10:5] *'d9);
+      ram_B <= ram_B + (vmem_q[15:11] *'d9);
       ram_state[4:0] <= ram_state[4:0] + 'b1;
    end //18
 	else if(ram_state[4:0] == 5'b10011)
    begin 
       AMA_adr <= AMA_adr + 'd1;
-      ram_R <= ram_R + (vmem_q[4:0] +'d5);
-      ram_G <= ram_G + (vmem_q[10:5] +'d5);
-      ram_B <= ram_B + (vmem_q[15:11] +'d5);
+      ram_R <= ram_R + (vmem_q[4:0] *'d5);
+      ram_G <= ram_G + (vmem_q[10:5] *'d5);
+      ram_B <= ram_B + (vmem_q[15:11] *'d5);
       ram_state[4:0] <= ram_state[4:0] + 'b1;
    end //19
 	else if(ram_state[4:0] == 5'b10100)
@@ -771,7 +805,7 @@ begin
    end //20
 	else if(ram_state[4:0] == 5'b10101)
    begin 
-      AMA_adr <= AMA_adr + 'd1;
+      AMA_adr <= AMA_adr + 'd176;
       ram_R <= ram_R + (vmem_q[4:0] << 0);
       ram_G <= ram_G + (vmem_q[10:5] << 0);
       ram_B <= ram_B + (vmem_q[15:11] << 0);
@@ -787,10 +821,10 @@ begin
    end //22
    else if(ram_state[4:0] == 5'b10111)
    begin 
-      AMA_adr <= AMA_adr + 'd176;
-      ram_R <= ram_R + (vmem_q[4:0] +'d5);
-      ram_G <= ram_G + (vmem_q[10:5] +'d5);
-      ram_B <= ram_B + (vmem_q[15:11] +'d5);
+      AMA_adr <= AMA_adr + 'd1;
+      ram_R <= ram_R + (vmem_q[4:0] *'d5);
+      ram_G <= ram_G + (vmem_q[10:5] *'d5);
+      ram_B <= ram_B + (vmem_q[15:11] *'d5);
       ram_state[4:0] <= ram_state[4:0] + 'b1;
    end //23
    else if(ram_state[4:0] == 5'b11000)
@@ -812,6 +846,102 @@ begin
 end
    
 assign AMAmem_waitx = waitx & waitx_d1 & waitx_d2 & waitx_d3 & waitx_d4 & waitx_d5 & waitx_d6 & waitx_d7 & waitx_d8 & waitx_d9 & waitx_d10;
+
+//-------------------------------------------------------------
+//erode - min(erode_R,G,B)
+//-------------------------------------------------------------
+
+reg[4:0] erode_R;
+reg[5:0] erode_G;
+reg[4:0] erode_B;
+reg[3:0] erode_state;
+reg [15:0] AMA_adr2;
+reg [14:0] Adr2;
+
+wire[15:0] erode_data={erode_R,erode_G,erode_B};
+
+always @(negedge resetx or posedge Sys_clk)
+begin
+   if (~resetx) erode_state[3:0] <= 4'b0000;
+   else if(Adr2[14:0] != AMAmem_adr[14:0]) 
+   begin
+      Adr2[14:0] <= AMAmem_adr[14:0];
+      erode_state[3:0] <= 4'b0001;
+   end
+   else if(ram_state[3:0] == 4'b0001)
+   begin
+      AMA_adr2 <= {A_addr, AMAmem_adr} - 'd181;
+      erode_R <= DecVData4[4:0];
+      erode_G <= DecVData4[10:5];
+      erode_B <= DecVData4[15:11];
+      erode_state[3:0] <= erode_state[3:0] + 'b1;
+   end //1
+	else if(ram_state[3:0] == 4'b0010)
+   begin
+      AMA_adr2 <= {A_addr, AMAmem_adr} + 'd1;
+      erode_R <= DecVData4[4:0] < erode_R ? DecVData4[4:0] : erode_R;
+      erode_G <= DecVData4[10:5] < erode_G ? DecVData4[10:5] : erode_G;
+      erode_B <= DecVData4[15:11] < erode_B ? DecVData4[15:11] : erode_B;
+      erode_state[3:0] <= erode_state[3:0] + 'b1;
+   end //2
+	else if(ram_state[3:0] == 4'b0011)
+   begin
+      AMA_adr2 <= {A_addr, AMAmem_adr} + 'd1;
+      erode_R <= DecVData4[4:0] < erode_R ? DecVData4[4:0] : erode_R;
+      erode_G <= DecVData4[10:5] < erode_G ? DecVData4[10:5] : erode_G;
+      erode_B <= DecVData4[15:11] < erode_B ? DecVData4[15:11] : erode_B;
+      erode_state[3:0] <= erode_state[3:0] + 'b1;
+   end //3
+	else if(ram_state[3:0] == 4'b0100)
+   begin
+      AMA_adr2 <= {A_addr, AMAmem_adr} + 'd178;
+      erode_R <= DecVData4[4:0] < erode_R ? DecVData4[4:0] : erode_R;
+      erode_G <= DecVData4[10:5] < erode_G ? DecVData4[10:5] : erode_G;
+      erode_B <= DecVData4[15:11] < erode_B ? DecVData4[15:11] : erode_B;
+      erode_state[3:0] <= erode_state[3:0] + 'b1;
+   end //4
+	else if(ram_state[3:0] == 4'b0101)
+   begin
+      AMA_adr2 <= {A_addr, AMAmem_adr} + 'd1;
+      erode_R <= DecVData4[4:0] < erode_R ? DecVData4[4:0] : erode_R;
+      erode_G <= DecVData4[10:5] < erode_G ? DecVData4[10:5] : erode_G;
+      erode_B <= DecVData4[15:11] < erode_B ? DecVData4[15:11] : erode_B;
+      erode_state[3:0] <= erode_state[3:0] + 'b1;
+   end //5
+	else if(ram_state[3:0] == 4'b0110)
+   begin
+      AMA_adr2 <= {A_addr, AMAmem_adr} + 'd1;
+      erode_R <= DecVData4[4:0] < erode_R ? DecVData4[4:0] : erode_R;
+      erode_G <= DecVData4[10:5] < erode_G ? DecVData4[10:5] : erode_G;
+      erode_B <= DecVData4[15:11] < erode_B ? DecVData4[15:11] : erode_B;
+      erode_state[3:0] <= erode_state[3:0] + 'b1;
+   end //6
+	else if(ram_state[3:0] == 4'b0111)
+   begin
+      AMA_adr2 <= {A_addr, AMAmem_adr} + 'd178;
+      erode_R <= DecVData4[4:0] < erode_R ? DecVData4[4:0] : erode_R;
+      erode_G <= DecVData4[10:5] < erode_G ? DecVData4[10:5] : erode_G;
+      erode_B <= DecVData4[15:11] < erode_B ? DecVData4[15:11] : erode_B;
+      erode_state[3:0] <= erode_state[3:0] + 'b1;
+   end //7
+	else if(ram_state[3:0] == 4'b1000)
+   begin
+      AMA_adr2 <= {A_addr, AMAmem_adr} + 'd1;
+      erode_R <= DecVData4[4:0] < erode_R ? DecVData4[4:0] : erode_R;
+      erode_G <= DecVData4[10:5] < erode_G ? DecVData4[10:5] : erode_G;
+      erode_B <= DecVData4[15:11] < erode_B ? DecVData4[15:11] : erode_B;
+      erode_state[3:0] <= erode_state[3:0] + 'b1;
+   end //8
+	else if(ram_state[3:0] == 4'b1001)
+   begin
+      AMA_adr2 <= {A_addr, AMAmem_adr} + 'd1;
+      erode_R <= DecVData4[4:0] < erode_R ? DecVData4[4:0] : erode_R;
+      erode_G <= DecVData4[10:5] < erode_G ? DecVData4[10:5] : erode_G;
+      erode_B <= DecVData4[15:11] < erode_B ? DecVData4[15:11] : erode_B;
+      erode_state[3:0] <= erode_state[3:0] + 'b1;
+   end //9
+end
+
 
 
 //-----------------------------------------------------------------
