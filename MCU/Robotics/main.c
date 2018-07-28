@@ -27,19 +27,28 @@ void Attack()
 
 void TurnLeft()
 {
-	Send_Command(0x1B, 0xE4);
+	Send_Command(0x08, 0xF7);
 	return;
 }
 
 void TurnRight()
 {
-	Send_Command(0x1C, 0xE3);
+	Send_Command(0x09, 0xF6);
 	return;
 }
 
 void GoStraight()
 {
 	Send_Command(0x18, 0xE7);
+	return;
+}
+void SwingLeft()
+{
+	Send_Command(0x20, 0xDF);
+	return;
+}
+void SwingRight() {
+	Send_Command(0x1E, 0xE1);
 	return;
 }
 void init_console(void)
@@ -80,7 +89,7 @@ int main(void)
     while(1)
     {
 		
-		cnt[0][0] = cnt[0][1] = cnt[1][0] = cnt[1][1] = cnt[2][0] = cnt[2][1] = 0;
+		s=cnt[0][0] = cnt[0][1] = cnt[1][0] = cnt[1][1] = cnt[2][0] = cnt[2][1] = 0;
 		clear_screen();
 		read_fpga_video_data(input);
 		for (r = 0; r < 4; r++) {
@@ -140,7 +149,18 @@ int main(void)
 				}
 			}
 		}
-		if ((MAX3(cnt[0][0], cnt[1][0], cnt[2][0]) < 700) && (MAX3(cnt[0][1], cnt[1][1], cnt[2][1]) < 500)) {
+		for (i = 0; i < 45; i++) {
+			for (j = 50; j < 130; j++) {
+				if (input[pos(i, j)] == 0x0000) {
+					s += 1;
+				}
+			}
+		}
+		if (s > 150&&s<700) {
+			GoStraight();
+			printf("enemy in Top");
+		}
+		else if ((MAX3(cnt[0][0], cnt[1][0], cnt[2][0]) < 700) && (MAX3(cnt[0][1], cnt[1][1], cnt[2][1]) < 500)) {
 			if (L_B == 1) {
 				TurnLeft();
 			}
@@ -200,14 +220,24 @@ int main(void)
 		}
 		else if (MAX3(cnt[0][0], cnt[1][0], cnt[2][0]) == cnt[1][0]) {
 			L_B = L_D = R_B = R_D = 0;
-			if (cnt[1][2] >= 300) {
-				printf("enemy in face");
+			if (cnt[1][1] >= 400) {
+				printf("enemy in face\n");
 				Attack();
+				SwingLeft();
+				SwingRight();
 			}
 			else if (MAX3(cnt[0][1], cnt[1][1], cnt[2][1]) == cnt[0][1]) {	
 				if (cnt[1][0] > cnt[0][1]) {
-					printf("enemy detected in CENTER!GoStraight!\n");
-                   Attack();
+					if (cnt[1][0] >= 400) {
+						SwingLeft();
+						SwingRight();
+					}
+					else {
+						printf("enemy detected in CENTER!Attack!\n");
+						Attack();
+						SwingLeft();
+						SwingRight();
+					}
 				}
 				else {
 					printf("blue detected in LEFT!TURN LEFT!\n");
@@ -217,8 +247,10 @@ int main(void)
 			}
 			else if (MAX3(cnt[0][1], cnt[1][1], cnt[2][1]) == cnt[1][1]) {
 				if (cnt[1][0] > cnt[1][1]) {
-					printf("enemy detected in CENTER!GoStraight!\n");
-                   Attack();
+					printf("enemy detected in CENTER!Attack!\n");
+					Attack();
+					SwingLeft();
+					SwingRight();
 				}
 				else {
 					printf("blue detected in CENTER!GO STRAIGHT!\n");
@@ -229,7 +261,9 @@ int main(void)
 			else if (MAX3(cnt[0][1], cnt[1][1], cnt[2][1]) == cnt[2][1]) {
 				if (cnt[1][0] > cnt[2][1]) {
 					printf("enemy detected in CENTER!GoStraight!\n");
-                   Attack();
+					Attack();
+					SwingLeft();
+					SwingRight();
 				}
 				else {
 					printf("blue detected in RIGHT!TURN RIGHT!\n");
