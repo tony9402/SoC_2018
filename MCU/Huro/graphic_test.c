@@ -59,6 +59,9 @@ void GreenBridge(U16* output, U16* input);
 void downRedStair(U16* output, U16* input);
 void Greening(U16* output, U16* input);
 void DownGreen(U16* output, U16* input);
+void mine(U16* output, U16* input);
+void upTrap(U16* output, U16* input);
+void downTrap(U16* output, U16* input);
 short StopCnt = 0;
 short StarCount = 0;
 void walk();
@@ -66,6 +69,7 @@ void walkslowly();
 void upstair();
 void downstair();
 void ex();
+void tumbling();
 
 void init_console(void)
 {
@@ -250,6 +254,29 @@ void downRedStair(U16* output, U16* input)
 	RedCnt = 0;
 
 }
+
+void mine(U16* output, U16* input)
+{
+
+}
+void hurdle(U16* output, U16* input)
+{
+	int i, j;
+	short BlueCnt=0;
+	for (i = 0; i < 120; i++)
+	{
+		for (j = 0; j < 180; j++)
+		{
+			if ((input[pos(i, j)] == 0x001F)) BlueCnt++;
+		}
+	}
+	if (BlueCnt > 100)
+	{
+		walkslowly();
+		tumbling();
+	}
+}
+
 void GreenBridge(U16* output, U16* input)
 {
 	int i, j;
@@ -278,7 +305,7 @@ void Greening(U16* output, U16* input)
 		{
 			/*	hsv = RGB565toHSV888(input[pos(i, j)]);
 			if ((IsGREEN(hsv))) divGreen[0]++;
-					*/
+			*/
 		}
 	}
 
@@ -288,7 +315,7 @@ void Greening(U16* output, U16* input)
 		{
 			/*		hsv = RGB565toHSV888(input[pos(i, j)]);
 			if ((IsGREEN(hsv))) divGreen[1]++;
-				*/
+			*/
 		}
 	}
 	if (divGreen[0] < divGreen[1]) printf("왼쪽으로 걷기");
@@ -308,15 +335,33 @@ void DownGreen(U16* output, U16* input)
 		{
 			/*		hsv = RGB565toHSV888(input[pos(i, j)]);
 			if ((IsGREEN(hsv))) BlackCnt++;
-				*/
+			*/
 		}
 	}
 	if (BlackCnt < 10) printf("계단 내려가");
 	BlackCnt = 0;
 }
-void walk()
+void upTrap(U16* output, U16* input)
+{
+	int i, j;
+	int YellowCnt;
+	for (i = 0; i < 120; i++)
+	{
+		for (j = 0; j < 180; j++)
+		{
+			if ((input[pos(i, j)] == 0xFFE0)) YellowCnt++;
+		}
+	}
+	if (YellowCnt > 1000) upstair();
+
+
+}
+void downTrap(U16* output, U16* input)
 {
 
+}
+void walk()
+{
 	Send_Command(1);
 	unsigned char buf[1] = { 0, };
 	while (1)
@@ -360,6 +405,16 @@ void downstair()
 void ex()
 {
 	Send_Command(7);
+	unsigned char buf[1] = { 0, };
+	while (1)
+	{
+		uart_read(UART1, buf, 1);
+		if (buf[0] == 38)break;
+	}
+}
+void tumbling()
+{
+	Send_Command(8);
 	unsigned char buf[1] = { 0, };
 	while (1)
 	{
