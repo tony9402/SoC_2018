@@ -19,7 +19,29 @@
 
 #include <termios.h>
 static struct termios inittio, newtio;
+void Attack()
+{
+	Send_Command(0x25, 0xDA);
+	return;
+}
 
+void TurnLeft()
+{
+	Send_Command(0x1B, 0xE4);
+	return;
+}
+
+void TurnRight()
+{
+	Send_Command(0x1C, 0xE3);
+	return;
+}
+
+void GoStraight()
+{
+	Send_Command(0x18, 0xE7);
+	return;
+}
 void init_console(void)
 {
     tcgetattr(0, &inittio);
@@ -52,6 +74,7 @@ int main(void)
     clear_screen();
     init_console();
     ret = uart_open();
+	uart_config(UART1, 57600, 8, UART_PARNONE, 1);
     if(ret < 0) return EXIT_FAILURE;
     DelayLoop(40000);
     Send_Command(0x01,0xFE);
@@ -130,32 +153,32 @@ int main(void)
 			if (MAX3(cnt[0][1], cnt[1][1], cnt[2][1]) == cnt[0][1]) {
 				if (cnt[0][0] > cnt[0][1]) {
 					printf("enemy detected in LEFT!TURN LEFT!\n");
-                    Send_Command(0x1B, 0xE4);
+                   TurnLeft();
 				}
 				else {
 					printf("blue detected in LEFT!TURN LEFT!\n");
-                    Send_Command(0x1B, 0xE4);
+                   TurnLeft();
 				}
 			}
 			else if (MAX3(cnt[0][1], cnt[1][1], cnt[2][1]) == cnt[1][1]) {
 				if (cnt[0][0] > cnt[1][1]) {
 					printf("enemy detected in LEFT!TURN LEFT!\n");
-                    Send_Command(0x1B, 0xE4);
+                   TurnLeft();
 				}
 				else {
 					printf("blue detected in CENTER!GO STRAIGHT!\n");
-                    Send_Command(0x13, 0xEC);
+                    GoStraight();
 				}
 
 			}
 			else if (MAX3(cnt[0][1], cnt[1][1], cnt[2][1]) == cnt[2][1]) {
 				if (cnt[0][0] > cnt[2][1]) {
 					printf("enemy detected in LEFT!TURN LEFT!\n");
-                    Send_Command(0x1B, 0xE4);
+                   TurnLeft();
 				}
 				else {
 					printf("blue detected in RIGHT!TURN RIGHT!\n");
-                    Send_Command(0x1C, 0xE3);
+					TurnRight();
 				}
 			}
 		}
@@ -163,32 +186,32 @@ int main(void)
 			if (MAX3(cnt[0][1], cnt[1][1], cnt[2][1]) == cnt[0][1]) {
 				if (cnt[1][0] > cnt[0][1]) {
 					printf("enemy detected in CENTER!TURN ATTACK!\n");
-                    Send_Command(0x22, 0xDD);
+                    Attack();
 				}
 				else {
 					printf("blue detected in LEFT!TURN LEFT!\n");
-                    Send_Command(0x1B, 0xE4);
+                   TurnLeft();
 				}
 			}
 			else if (MAX3(cnt[0][1], cnt[1][1], cnt[2][1]) == cnt[1][1]) {
 				if (cnt[1][0] > cnt[1][1]) {
 					printf("enemy detected in CENTER!ATTACK!\n");
-                    Send_Command(0x22, 0xDD);
+                    Attack();
 				}
 				else {
 					printf("blue detected in CENTER!GO STRAIGHT!\n");
-                    Send_Command(0x13, 0xEC);
+                    GoStraight();
 				}
 
 			}
 			else if (MAX3(cnt[0][1], cnt[1][1], cnt[2][1]) == cnt[2][1]) {
 				if (cnt[1][0] > cnt[2][1]) {
 					printf("enemy detected in CENTER!ATTACK!\n");
-                    Send_Command(0x22, 0xDD);
+                    Attack();
 				}
 				else {
 					printf("blue detected in RIGHT!TURN RIGHT!\n");
-                    Send_Command(0x1C, 0xE3);
+                   TurnRight();
 				}
 			}
 		}
@@ -196,32 +219,32 @@ int main(void)
 			if (MAX3(cnt[0][1], cnt[1][1], cnt[2][1]) == cnt[0][1]) {
 				if (cnt[2][0] > cnt[0][1]) {
 					printf("enemy detected in RIGHT!TURN RIGHT!\n");
-                    Send_Command(0x1C, 0xE3);
+                   TurnRight();
 				}
 				else {
 					printf("blue detected in LEFT!TURN LEFT!\n");
-                    Send_Command(0x1B, 0xE4);
+                   TurnLeft();
 				}
 			}
 			else if (MAX3(cnt[0][1], cnt[1][1], cnt[2][1]) == cnt[1][1]) {
 				if (cnt[2][0] > cnt[1][1]) {
 					printf("enemy detected in RIGHT!TURN RIGHT!\n");
-                    Send_Command(0x1C, 0xE3);
+                   TurnRight();
 				}
 				else {
 					printf("blue detected in CENTER!GO STRAIGHT!\n");
-                    Send_Command(0x13, 0xEC);
+					GoStraight();
 				}
 
 			}
 			else if (MAX3(cnt[0][1], cnt[1][1], cnt[2][1]) == cnt[2][1]) {
 				if (cnt[2][0] > cnt[2][1]) {
 					printf("enemy detected in RIGHT!TURN RIGHT!\n");
-                    Send_Command(0x1C, 0xE3);
+                   TurnRight();
 				}
 				else {
 					printf("blue detected in RIGHT!TURN RIGHT!\n");
-                    Send_Command(0x1C, 0xE3);
+                   TurnRight();
 				}
 			}
 		}
