@@ -45,11 +45,46 @@ U32 LineSum_x = 0;
 U32 LineSum_y = 0;
 short Linemax_i, Linemax_j, Linemin_i, Linemin_j;
 short Linemin_i_j, Linemax_i_j, Linemin_ih_j, Linemax_ih_j;
-
+short BlueIndex[120][180];
+short BlueIndex2[90];
+short BlueIndex3[90];
 BYTE opening(U16 *input);
 
+//struct POS
+//{
+//	U16 X;
+//	U16 Y;
+//};
 #include <termios.h>
 static struct termios inittio, newtio;
+void BeforeStart(U16* output, U16* input);
+void StartBarigate(U16* output, U16* input);
+void EndBarigate(U16* output, U16* input);
+void downRedStair(U16* output, U16* input);
+void upRedStair(U16* output, U16* input);
+void hurdle(U16* output, U16* input);
+void Gate(U16* output, U16* input);
+void GreenBridge(U16* output, U16* input);
+void downRedStair(U16* output, U16* input);
+void Greening(U16* output, U16* input);
+void DownGreen(U16* output, U16* input);
+void mine(U16* output, U16* input);
+void upTrap(U16* output, U16* input);
+void downTrap(U16* output, U16* input);
+short StopCnt = 0;
+short StarCount = 0;
+void walkFront();
+void walkslowly();
+void upstair();
+void downstair();
+void ex();
+void tumbling();
+void SeeLeft();
+void SeeStraight();
+void SeeFront();
+void goLeft();
+void goRight();
+
 
 void init_console(void)
 {
@@ -83,6 +118,9 @@ void GoStraight()
 
 int main(int argc, char **argv)
 {
+	int StartCount=0;
+	U16* input = (U16*)malloc(2 * 90 * 60);
+	U16* output = (U16*)malloc(2 * 180 * 120);
 	short i, j;
 	float x;
 	float dx;
@@ -100,120 +138,417 @@ int main(int argc, char **argv)
 	}
 	direct_camera_display_off();
 	clear_screen();
-	DelayLoop(100000);
 	while(1)
 	{
 		read_fpga_video_data(input);
-		
-		Linecnt_x = LineSum_x = 0;
-		Linecnt_y = LineSum_y = 0;
-		
-		opening(input);
-
+		if (StopCnt == 0) BeforeStart(output, input);
+		else if(StopCnt == 1)
+		{
+			StartBarigate(output, input);
+		}
+		else if (StopCnt == 2)
+		{
+			upRedStair(output, input);
+		}
+		else if (StopCnt == 3)
+		{
+			downRedStair(output, input);
+		}
+		else if (StopCnt == 4)
+		{
+			hurdle(output, input);
+		}
 		draw_fpga_video_data_full(input);
 		flip();
-		DelayLoop(40000);
+		DelayLoop(5000);
 	}
 	uart_close();
 	close_graphic();
 	return 0;
 }
 
-void opening(U16 *input)
+
+void BeforeStart(U16* output, U16* input)//StopCnt==0
 {
-	short i,j;
-	U32 where, count, pos_sum;
-	count = pos_sum = where = 0;
-	U16* erosion_arr = (U16*)malloc(43200);
-	memcpy(erosion_arr,input,21600 * 2);
-	for(i=0;i<height;i++)
+	int i, j;
+	short YellowCnt = 0;
+	for (i = 0; i < 120; i++)
 	{
-		for(j=0;j<width;j++)
+		for (j = 0; j < 180; j++)
 		{
-			if(input[pos(i,j)] == 0x001F)
-			{
-				input[pos(i,j)] = 0x001F;
+			if (input[pos(i, j)] == 0xFFE0) YellowCnt++;
+		}
+	}
+	if (YellowCnt > 700) StopCnt++;//1st try:1000,2nd try:700 
+}
+
+void StartBarigate(U16* output, U16* input)//StopCnt ==1
+{
+	int i, j;
+	short YellowCnt = 0, BlackCnt = 0;
+	for (i = 0; i < 120; i++)
+	{
+		for (j = 0; j < 180; j++)
+		{
+			if ( input[pos(i, j)] ==0xFFE0) YellowCnt++;
 			}
-			else if(input[pos(i,j)] == 0x07e0)
-			{
-				input[pos(i,j)] = 0x07e0;
-			}
-			else
-			{
-				input[pos(i,j)] = 0xFFFF;
-			}
-			if(i>=1&&erosion_arr[pos(i-1,j)] == 0xFFFF){input[pos(i,j)] = 0xFFFF;continue;}
-			if(i<height-1&&erosion_arr[pos(i+1,j)] == 0xFFFF){input[pos(i,j)] = 0xFFFF;continue;}
-			if(j>=1&&erosion_arr[pos(i,j-1)] == 0xFFFF){input[pos(i,j)] = 0xFFFF;continue;}
-			if(j<width-1&&erosion_arr[pos(i,j+1)] == 0xFFFF){input[pos(i,j)] = 0xFFFF;continue;}
-			if(i>=1&&j>=1&&erosion_arr[pos(i-1,j-1)] == 0xFFFF){input[pos(i,j)] = 0xFFFF;continue;}
-			if(i<height-1&&j>=1&&erosion_arr[pos(i+1,j-1)] == 0xFFFF){input[pos(i,j)] = 0xFFFF;continue;}
-			if(j>=1&&i<height-1&&erosion_arr[pos(i-1,j+1)] == 0xFFFF){input[pos(i,j)] = 0xFFFF;continue;}
-			if(j<width-1&&i<height-1&&erosion_arr[pos(i+1,j+1)] == 0xFFFF){input[pos(i,j)] = 0xFFFF;continue;}
-			
+	}
+	if (YellowCnt < 300)
+	{
+		walkFront();
+		walkFront();
+		walkFront();
+		StopCnt++;
+	}
+	YellowCnt= 0;
+}
+
+void upRedStair(U16* output, U16* input)//StopCnt==2
+{
+	int i, j;
+	U16 RedCnt = 0;
+	unsigned char buf[1] = { 0,  };
+	short Cnt=0,Cnt2=0;
+	for (i = 0; i < 120; i++)
+	{
+		for (j = 0; j < 180; j++)
+		{
+
+			if ((input[pos(i, j)] == 0xF800)) RedCnt++;
 		}
 	}
 
-	memcpy(erosion_arr,input,21600 * 2);
-	for(i=0;i<height;i++)
+
+	if (RedCnt > 5000)
 	{
-		for(j=0;j<width;j++)
+		DelayLoop(100000);
+		walkFront();
+
+		if (Cnt == 0)
 		{
-			if(input[pos(i,j)] == 0x001F)
-			{
-				input[pos(i,j)] = 0x001F;
-			}
-			else if(input[pos(i,j)] == 0x07e0)
-			{
-				input[pos(i,j)] = 0x07e0;
-			}
-			else
-			{
-				input[pos(i,j)] = 0xFFFF;
-			}
-			if(i>=1&&erosion_arr[pos(i-1,j)] != 0xFFFF){input[pos(i,j)] = erosion_arr[pos(i-1,j)];}
-			if(i<height-1&&erosion_arr[pos(i+1,j)] != 0xFFFF){input[pos(i,j)] = erosion_arr[pos(i+1,j)];}
-			if(j>=1&&erosion_arr[pos(i,j-1)] != 0xFFFF){input[pos(i,j)] = erosion_arr[pos(i,j-1)];}
-			if(j<width-1&&erosion_arr[pos(i,j+1)] != 0xFFFF){input[pos(i,j)] = erosion_arr[pos(i,j+1)];}
-			if(i>=1&&j>=1&&erosion_arr[pos(i-1,j-1)] != 0xFFFF){input[pos(i,j)] = erosion_arr[pos(i-1,j-1)];}
-			if(i<height-1&&j>=1&&erosion_arr[pos(i+1,j-1)] != 0xFFFF){input[pos(i,j)] = erosion_arr[pos(i+1,j-1)];}
-			if(j>=1&&i<height-1&&erosion_arr[pos(i-1,j+1)] != 0xFFFF){input[pos(i,j)] = erosion_arr[pos(i-1,j+1)];}
-			if(j<width-1&&i<height-1&&erosion_arr[pos(i+1,j+1)] != 0xFFFF){input[pos(i,j)] = erosion_arr[pos(i+1,j+1)];}
-			if(input[pos(i,j)] == 0x07e0)
-			{
-				if(20<=width&&width<=160){
-					count++;
-					pos_sum+=j;
-				}
-			}
+			upstair();
+			Cnt++;
+			StopCnt++;
 		}
 	}
 
-	free(erosion_arr);
-	where = pos_sum / count;
-	if(80<=where&&where <= 100)
+	else
 	{
-		Send_Command(3);
+		if(Cnt2==0)
+		{
+			walkFront();
+			Cnt2++;
+		}
 	}
-	else if(20<=where && where < 80)
+}
+void downRedStair(U16* output, U16* input)
+{
+	int i, j;
+	short RedCnt = 0;
+	short Cnt = 0;
+	for (i = 0; i < 120; i++)
 	{
-		Send_Command(2);
+		for (j = 0; j < 180; j++)
+		{
+			if ((input[pos(i, j)] == 0xF800)) RedCnt++;
+		}
 	}
-	else if(100<where&&where<=160)
+	if (RedCnt < 10)//1st try:50 2nd try:20
 	{
-		Send_Command(1);
-	}
-	/*if(abs(left - right) <= 20 && left >= 40 && right >= 40)
-	{
-		return 90;
-	}
-	else if(left > right)
-	{
-		return 135;
+		downstair();
+		StopCnt++;
 	}
 	else
 	{
-		return 45;	
-	}*/
+		walkFront();
+			Cnt++;
+	}
+	RedCnt = 0;
 
+}
+void mine(U16* output, U16* input)
+{
+	//U16 temp = 180;
+	//int temp_i,i,j;
+	//for (i = 0; i < 50; i++)
+	//{
+	//	if (POS[i].X < temp) temp = POS[i].X;
+	//	temp_i = i;
+	//}
+	//if ((50 < POS[i].X) && (90 > PSO[i])) goLeft();
+	//else if ((89 < POS[i].X) && (130 > PSO[i])) goRight();
+	//else walk();
+}
+void hurdle(U16* output, U16* input)
+{
+	int i, j;
+	short BlueCnt=0;
+
+	for (i = 0; i < 120; i++)
+	{
+		for (j = 0; j < 180; j++)
+		{
+			if ((input[pos(i, j)] == 0x001F)) BlueCnt++;
+		}
+	}
+
+	if (BlueCnt > 500) 	
+	{
+		walkFront();
+		walkFront();
+		walkFront();
+		walkFront();
+		walkFront();
+		tumbling();
+		walkFront();
+		StopCnt++;
+		//		SeeLeft();
+	}
+	else walkFront();
+
+}
+
+void Gate(U16* output, U16* input)
+{
+	int i, j,temp_i1,temp_i2;
+	short temp = 0, temp2 = 0;
+	for (i = 0; i < 90; i++)
+	{
+		for (j = 0; j < 180; j++)
+		{
+			if ((input[pos(i, j)] == 0x001F))
+			{
+				BlueIndex[i][j]++;
+				if (j < 90) BlueIndex2[j];
+				else BlueIndex3[j];
+			}
+		}
+	}
+	for (i = 0; i < 90; i++)
+	{
+		if (BlueIndex2[i] > temp)
+		{
+			temp = BlueIndex2[i];
+			temp_i1 = i;
+		}
+		if (BlueIndex3[i + 90] > temp2)
+		{
+			temp2 = BlueIndex3[i+90];
+			temp_i2 = i+90;
+		}
+	}
+	if ((temp_i1 < 40) || (temp_i2 < 130)) goRight();
+	else goLeft();
+	if ((40 < temp_i1)&&(temp_i1 < 50) && (130 <temp_i2)&&( temp_i2 < 140))
+	{
+		walkslowly();
+		StopCnt++;
+	}
+
+
+}
+void GreenBridge(U16* output, U16* input)
+{
+	int i, j;
+	short GreenCnt = 0;
+	for (i = 0; i < 120; i++)
+	{
+		for (j = 0; j < 180; j++)
+		{
+			//hsv = RGB565toHSV888(input[pos(i, j)]);
+			//if ((IsGREEN(hsv))) GreenCnt++;
+		}
+	}
+	if (GreenCnt > 100) {
+		printf("일정 거리 이상 걷기");
+		printf("다리 나왔다 올라가자");
+		StopCnt++;
+	}
+}
+void Greening(U16* output, U16* input)
+{
+	int i, j;
+	short divGreen[2] = { 0 };
+	for (i = 0; i < 120; i++)
+	{
+		for (j = 91; j < 180; j++)
+		{
+			/*	hsv = RGB565toHSV888(input[pos(i, j)]);
+			if ((IsGREEN(hsv))) divGreen[0]++;
+			*/
+		}
+	}
+
+	for (i = 0; i < 120; i++)
+	{
+		for (j = 0; j < 90; j++)
+		{
+			/*		hsv = RGB565toHSV888(input[pos(i, j)]);
+			if ((IsGREEN(hsv))) divGreen[1]++;
+			*/
+		}
+	}
+	if (divGreen[0] < divGreen[1]) printf("왼쪽으로 걷기");
+	else printf("오른쪽으로 걷기");
+	if ((divGreen[0] - divGreen[1] < 30) && (divGreen[0] - divGreen[1] > -30)) printf("중심 맟춰짐,n보 걷기\n");
+	if (divGreen[0] + divGreen[1] < 10) StopCnt++;
+	divGreen[0] = divGreen[1] = 0;
+
+}
+void DownGreen(U16* output, U16* input)
+{
+	int i, j;
+	short BlackCnt = 0;
+	for (i = 0; i < 120; i++)
+	{
+		for (j = 0; j < 180; j++)
+		{
+			/*		hsv = RGB565toHSV888(input[pos(i, j)]);
+			if ((IsGREEN(hsv))) BlackCnt++;
+			*/
+		}
+	}
+	if (BlackCnt < 10) printf("계단 내려가");
+	BlackCnt = 0;
+}
+void upTrap(U16* output, U16* input)
+{
+	int i, j;
+	int YellowCnt;
+	for (i = 0; i < 120; i++)
+	{
+		for (j = 0; j < 180; j++)
+		{
+			if ((input[pos(i, j)] == 0xFFE0)) YellowCnt++;
+		}
+	}
+	if (YellowCnt > 1000) upstair();
+
+
+}
+void downTrap(U16* output, U16* input)
+{
+
+}
+void walkFront()
+{
+	Send_Command(1);
+	unsigned char buf[1] = { 0, };
+	while (1)
+	{
+		uart_read(UART1, buf, 1);
+		if (buf[0] == 38)break;
+	}
+}
+void walkslowly()
+{
+	Send_Command(4);
+	unsigned char buf[1] = { 0, };
+	while (1)
+	{
+		uart_read(UART1, buf, 1);
+		if (buf[0] == 38)break;
+	}
+}
+
+void upstair()
+{
+	Send_Command(2);
+	unsigned char buf[1] = { 0, };
+	while (1)
+	{
+		uart_read(UART1, buf, 1);
+		if (buf[0] == 38)break;
+	}
+}
+
+void downstair()
+{
+	Send_Command(3);
+	unsigned char buf[1] = { 0, };
+	while (1)
+	{
+		uart_read(UART1, buf, 1);
+		if (buf[0] == 38)break;
+	}
+}
+void ex()
+{
+	Send_Command(7);
+	unsigned char buf[1] = { 0, };
+	while (1)
+	{
+		uart_read(UART1, buf, 1);
+		if (buf[0] == 38)break;
+	}
+}
+void tumbling()
+{
+	Send_Command(8);
+	unsigned char buf[1] = { 0, };
+	while (1)
+	{
+		uart_read(UART1, buf, 1);
+		if (buf[0] == 38)break;
+	}
+}
+void SeeLeft()
+{
+	{
+		Send_Command(9);
+		unsigned char buf[1] = { 0, };
+		while (1)
+		{
+			uart_read(UART1, buf, 1);
+			if (buf[0] == 38)break;
+		}
+	}
+}
+void SeeRight()
+{
+	{
+		Send_Command(10);
+		unsigned char buf[1] = { 0, };
+		while (1)
+		{
+			uart_read(UART1, buf, 1);
+			if (buf[0] == 38)break;
+		}
+	}
+}
+void SeeFront()
+{
+	{
+		Send_Command(11);
+		unsigned char buf[1] = { 0, };
+		while (1)
+		{
+			uart_read(UART1, buf, 1);
+			if (buf[0] == 38)break;
+		}
+	}
+}
+void goLeft()
+{
+	{
+		Send_Command(12);
+		unsigned char buf[1] = { 0, };
+		while (1)
+		{
+			uart_read(UART1, buf, 1);
+			if (buf[0] == 38)break;
+		}
+	}
+}
+void goRight()
+{
+	{
+		Send_Command(13);
+		unsigned char buf[1] = { 0, };
+		while (1)
+		{
+			uart_read(UART1, buf, 1);
+			if (buf[0] == 38)break;
+		}
+	}
 }
