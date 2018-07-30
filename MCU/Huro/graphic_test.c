@@ -45,9 +45,16 @@ U32 LineSum_x = 0;
 U32 LineSum_y = 0;
 short Linemax_i, Linemax_j, Linemin_i, Linemin_j;
 short Linemin_i_j, Linemax_i_j, Linemin_ih_j, Linemax_ih_j;
-
+short BlueIndex[120][180];
+short BlueIndex2[90];
+short BlueIndex3[90];
 BYTE opening(U16 *input);
 
+//struct POS
+//{
+//	U16 X;
+//	U16 Y;
+//};
 #include <termios.h>
 static struct termios inittio, newtio;
 void BeforeStart(U16* output, U16* input);
@@ -55,6 +62,8 @@ void StartBarigate(U16* output, U16* input);
 void EndBarigate(U16* output, U16* input);
 void downRedStair(U16* output, U16* input);
 void upRedStair(U16* output, U16* input);
+void hurdle(U16* output, U16* input);
+void Gate(U16* output, U16* input);
 void GreenBridge(U16* output, U16* input);
 void downRedStair(U16* output, U16* input);
 void Greening(U16* output, U16* input);
@@ -70,6 +79,12 @@ void upstair();
 void downstair();
 void ex();
 void tumbling();
+void SeeLeft();
+void SeeStraight();
+void SeeFront();
+void goLeft();
+void goRight();
+
 
 void init_console(void)
 {
@@ -198,20 +213,11 @@ void upRedStair(U16* output, U16* input)//StopCnt==2
 	}
 
 
-	if (RedCnt > 1000)
+	if (RedCnt > 5000)
 	{
-		/*while (1)
-		{
-			uart_read(UART1, buf, 1);
-			if (buf[0] == 38)break;
-		}*/
+
 		walkslowly();
 
-		/*while (1)
-		{
-			uart_read(UART1, buf, 1);
-			if (buf[0] == 38)break;
-		}*/
 		if (Cnt == 0)
 		{
 			upstair();
@@ -224,7 +230,7 @@ void upRedStair(U16* output, U16* input)//StopCnt==2
 	{
 		if(Cnt2==0)
 		{
-			ex();
+			walkslowly();
 			Cnt2++;
 		}
 	}
@@ -254,10 +260,18 @@ void downRedStair(U16* output, U16* input)
 	RedCnt = 0;
 
 }
-
 void mine(U16* output, U16* input)
 {
-
+	//U16 temp = 180;
+	//int temp_i,i,j;
+	//for (i = 0; i < 50; i++)
+	//{
+	//	if (POS[i].X < temp) temp = POS[i].X;
+	//	temp_i = i;
+	//}
+	//if ((50 < POS[i].X) && (90 > PSO[i])) goLeft();
+	//else if ((89 < POS[i].X) && (130 > PSO[i])) goRight();
+	//else walk();
 }
 void hurdle(U16* output, U16* input)
 {
@@ -274,9 +288,51 @@ void hurdle(U16* output, U16* input)
 	{
 		walkslowly();
 		tumbling();
+		walk();
+		SeeLeft();
 	}
+	StopCnt++;
 }
 
+void Gate(U16* output, U16* input)
+{
+	int i, j,temp_i1,temp_i2;
+	short temp = 0, temp2 = 0;
+	for (i = 0; i < 90; i++)
+	{
+		for (j = 0; j < 180; j++)
+		{
+			if ((input[pos(i, j)] == 0x001F))
+			{
+				BlueIndex[i][j]++;
+				if (j < 90) BlueIndex2[j];
+				else BlueIndex3[j];
+			}
+		}
+	}
+	for (i = 0; i < 90; i++)
+	{
+		if (BlueIndex2[i] > temp)
+		{
+			temp = BlueIndex2[i];
+			temp_i1 = i;
+		}
+		if (BlueIndex3[i + 90] > temp2)
+		{
+			temp2 = BlueIndex3[i+90];
+			temp_i2 = i+90;
+		}
+	}
+	if ((temp_i1 < 40) || (temp_i2 < 130)) goRight();
+	else goLeft();
+	if ((40 < temp_i1)&&(temp_i1 < 50) && (130 <temp_i2)&&( temp_i2 < 140))
+	{
+		walk();
+		StopCnt++;
+	}
+
+
+}
 void GreenBridge(U16* output, U16* input)
 {
 	int i, j;
@@ -372,7 +428,7 @@ void walk()
 }
 void walkslowly()
 {
-	Send_Command(5);
+	Send_Command(4);
 	unsigned char buf[1] = { 0, };
 	while (1)
 	{
@@ -420,5 +476,65 @@ void tumbling()
 	{
 		uart_read(UART1, buf, 1);
 		if (buf[0] == 38)break;
+	}
+}
+void SeeLeft()
+{
+	{
+		Send_Command(9);
+		unsigned char buf[1] = { 0, };
+		while (1)
+		{
+			uart_read(UART1, buf, 1);
+			if (buf[0] == 38)break;
+		}
+	}
+}
+void SeeRight()
+{
+	{
+		Send_Command(10);
+		unsigned char buf[1] = { 0, };
+		while (1)
+		{
+			uart_read(UART1, buf, 1);
+			if (buf[0] == 38)break;
+		}
+	}
+}
+void SeeFront()
+{
+	{
+		Send_Command(11);
+		unsigned char buf[1] = { 0, };
+		while (1)
+		{
+			uart_read(UART1, buf, 1);
+			if (buf[0] == 38)break;
+		}
+	}
+}
+void goLeft()
+{
+	{
+		Send_Command(12);
+		unsigned char buf[1] = { 0, };
+		while (1)
+		{
+			uart_read(UART1, buf, 1);
+			if (buf[0] == 38)break;
+		}
+	}
+}
+void goRight()
+{
+	{
+		Send_Command(13);
+		unsigned char buf[1] = { 0, };
+		while (1)
+		{
+			uart_read(UART1, buf, 1);
+			if (buf[0] == 38)break;
+		}
 	}
 }
