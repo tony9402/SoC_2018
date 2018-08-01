@@ -286,7 +286,7 @@ bool Find_Black_circle(int *StopCnt)
 				}
 				position[circle-1].x = sum_x / roomsize;
 				position[circle-1].y = sum_y / roomsize;
-				if(roomsize < 10 || roomsize > 900) // 40
+				if(roomsize < 3 || roomsize > 900) // 40 2rd 10 3rd 3 
 				{
 					circle--;
 				}
@@ -443,6 +443,121 @@ U32 Find_Color(U16 Color, range Range)//색,동적할당,변수(몇개받을건�
 	free(input);
 	return circle;
 }
+
+U32 Find_Color_RANGE(U16 Color, range Range, Pos_range pos_range)//색,동적할당,변수(몇개받을건지),넒이
+{
+	short i, j;
+	U16 *input = (U16*)malloc(43200);
+	read_fpga_video_data(input);
+	memset(visited, 0, 43200);
+	memset(area, 0, 16200);
+	memset(position, 0, 16200);
+	U32 circle = 0;
+	queue Q;
+	Q.size = 0;
+	Q.pos = (xy*)malloc(sizeof(xy) * 16200);
+	U16 front, back;
+	U32 roomsize = 0;
+	front = back = 0;
+	U16 qx, qy;
+	U32 sum_x, sum_y;
+	for (i = pos_range.First_y; i < pos_range.Second_y; i++)
+	{
+		for (j = pos_range.First_x; j < pos_range.Second_x; j++)
+		{
+			roomsize = 0;
+			sum_x = 0;
+			sum_y = 0;
+			if (input[pos(i, j)] == Color && visited[pos(i, j)] != 1)
+			{
+				circle++;
+				Q.pos[back % 8100].x = j;
+				Q.pos[back % 8100].y = i;
+				back = (back + 1) % 8100;
+				Q.size++;
+				visited[pos(i, j)] = 1;
+				while (Q.size != 0)
+				{
+					roomsize++;
+					qx = Q.pos[front].x;
+					qy = Q.pos[front].y;
+					sum_x += qx;
+					sum_y += qy;
+					front = (front + 1) % 8100;
+					Q.size--;
+					if (qx - 1 >= 0 && input[pos(qy, qx - 1)] == Color && visited[pos(qy, qx - 1)] == 0)
+					{
+						visited[pos(qy, qx - 1)] = 1;
+						Q.pos[back % 8100].x = qx - 1;
+						Q.pos[back % 8100].y = qy;
+						back = (back + 1) % 8100;
+						Q.size++;
+					}
+					if (qy - 1 >= 0 && input[pos(qy - 1, qx)] == Color && visited[pos(qy - 1, qx)] == 0)
+					{
+						visited[pos(qy - 1, qx)] = 1;
+						Q.pos[back % 8100].x = qx;
+						Q.pos[back % 8100].y = qy - 1;
+						back = (back + 1) % 8100;
+						Q.size++;
+					}
+					if (qx + 1 < width&&input[pos(qy, qx + 1)] == Color && visited[pos(qy, qx + 1)] == 0)
+					{
+						visited[pos(qy, qx + 1)] = 1;
+						Q.pos[back % 8100].x = qx + 1;
+						Q.pos[back % 8100].y = qy;
+						back = (back + 1) % 8100;
+						Q.size++;
+					}
+					if (qy + 1 < height&&input[pos(qy + 1, qx)] == Color && visited[pos(qy + 1, qx)] == 0)
+					{
+						visited[pos(qy + 1, qx)] = 1;
+						Q.pos[back % 8100].x = qx;
+						Q.pos[back % 8100].y = qy + 1;
+						back = (back + 1) % 8100;
+						Q.size++;
+					}
+				}
+				position[circle - 1].x = sum_x / roomsize;
+				position[circle - 1].y = sum_y / roomsize;
+				if (roomsize < Range.min_area || roomsize > Range.max_area)
+				{
+					circle--;
+				}
+				else {
+					area[circle] = roomsize;
+					position[circle - 1].area = roomsize;
+				}
+			}
+		}
+	}
+	U16 cnt_circle;
+	U16 cx, cy;
+	for (cnt_circle = 0; cnt_circle < circle; cnt_circle++)
+	{
+		cx = position[cnt_circle].x;
+		cy = position[cnt_circle].y;
+		if (!(30 <= cx && cx <= 150 && cy <= 100))continue;
+		for (i = -20; i <= 20; i++)
+		{
+			if (cx + i >= 0 || cx + i < width)
+				input[pos(cy, cx + i)] = 0x07e0;
+		}
+		for (i = -20; i <= 20; i++)
+		{
+			if (cy + i >= 0 || cy + i < height)
+				input[pos(cy + i, cx)] = 0x07e0;
+		}
+	}
+
+	draw_fpga_video_data_full(input);
+	flip();
+
+	free(Q.pos);
+	free(input);
+	return circle;
+}
+
 void BeforeStart(int *StopCnt)
 {
 	U16* input = (U16*)malloc(2*180*120);
@@ -477,9 +592,9 @@ void StartBarigate(int *StopCnt)
 	}
 	if (YellowCnt < 300)
 	{
-		walkFront();
-		walkFront();
-		walkFront();
+		walkslowly();
+		walkslowly();
+		walkslowly();
 		(*StopCnt)++;
 	}
 	YellowCnt= 0;
@@ -510,6 +625,7 @@ void upRedStair(int *StopCnt)
 		{
 			walkslowly();
 			walkslowly();
+			GO_TO_RED_STAIR_MID();
 			upstair();
 			Cnt++;
 			(*StopCnt)++;
@@ -653,77 +769,85 @@ short TURN_COUNT = 0;
 
 void Gate(int *StopCnt)
 {
-	short i, j, temp_i1, temp_i2;
-	short temp = 0, temp2 = 0;
+   range GateRange;
+   GateRange.max_area = 600;
+   GateRange.min_area = 10;
+   short i, j, temp_i1, temp_i2;
+   short temp = 0, temp2 = 0;
 
-	U16 *input = (U16*)malloc(2 * 180 * 120);
-	read_fpga_video_data(input);
-	
-	if (TURN_COUNT == 0) {
-		SeeFront();
-		Turn_Left90();
-		TURN_COUNT++;
-	}
+   U16 *input = (U16*)malloc(2 * 180 * 120);
+   read_fpga_video_data(input);
 
-	U32 Count = 0;
-	range Range;
-	Range.max_area = 1000;
-	Range.min_area = 30;
+   if (TURN_COUNT == 0) {
+      SeeFront();
+      Turn_Left90();
+      TURN_COUNT++;
+   }
 
-	Find_Color(0x001F, Range);
+   U32 Count = 0;
 
-	for (i = 0; i < Count; i++)
-	{
-		if (temp < Gate_pos[i].area)
-		{
-			temp = Gate_pos[i].area;
-			temp_i1 = i;
-		}
-		if((Gate_pos[i].area<temp)&&(temp2<Gate_pos[i].area))
-		{
-			temp2 = Gate_pos[i].area;
-			temp_i2 = i;
+   Find_Color(0x001F,GateRange);
+   
+   for (i = 0; i < Count; i++)
+   {
+      if (temp < position[i].area)
+      {
+         if (position[i].x < 90)
+         {
+            temp = position[i].area;
+            temp_i1 = i;
+         }
+      }
+      if(position[i].area>temp2)
+      {
+         if (position[i].x > 89)
+         {
+            temp2 = position[i].area;
+            temp_i2 = i;
+         }
+      }
+   }
+   if (((position[temp_i1].x+ position[temp_i1].x)/2)<130) GoRight90();
+   else GoLeft90();
+   if ((((position[temp_i1].x + position[temp_i1].x) / 2)>40) && (((position[temp_i1].x + position[temp_i1].x) / 2)<80))   /*(40 < temp_i1)&&(temp_i1 < 50) && (130 <temp_i2)&&( temp_i2 < 140)*/
+   {
+      walkFront();
+      (*StopCnt)++;
+   }
 
-		}
-	}
-	if (((Gate_pos[temp_i1].x+ Gate_pos[temp_i1].x)/2)<130) GoRight90();
-	else GoLeft90();
-	if ((((Gate_pos[temp_i1].x + Gate_pos[temp_i1].x) / 2)>40) && ((Gate_pos[temp_i1].x + Gate_pos[temp_i1].x) / 2)<80)   /*(40 < temp_i1)&&(temp_i1 < 50) && (130 <temp_i2)&&( temp_i2 < 140)*/
-	{
-		walkFront();
-		(*StopCnt)++;
-	}
-
-	draw_fpga_video_data_full(input);
-	flip();
-	free(input);
+   draw_fpga_video_data_full(input);
+   flip();
+   free(input);
 
 }
 
 void GreenBridge(int *StopCnt)
 {
-	U16 *input = (U16*)malloc(2 * 180 * 120);
-
-	read_fpga_video_data(input);
-	short i, j;
-	short GreenCnt = 0;
-	
-	for (i = 70; i < 120; i++)
-	{
-		for (j = 0; j < 180; j++)
-		{
-			if ((input[pos(i, j)] == 0x07E0)) GreenCnt++;
-		}
-	}
-	if (GreenCnt > 100) 
-	{
-		//추가해야함
-		//멈추면 성공
-		(*StopCnt)++;
-	}
-	else walkFront();//walkSlowly()로 수정해야함 예시용
-	draw_fpga_video_data_full(input);
-	flip();
+   see65();
+   U16 *input = (U16*)malloc(2 * 180 * 120);
+   read_fpga_video_data(input);
+   short i, j;
+   short GreenCnt = 0;
+   
+   for (i = 0; i < 120; i++)
+   {
+      for (j = 0; j < 180; j++)
+      {
+         if ((input[pos(i, j)] == 0x07E0)) GreenCnt++;
+      }
+   }
+   if (GreenCnt > 1000) 
+   {
+      walkslowly();
+      walkslowly();
+      walkslowly();
+      up_2cm();
+      (*StopCnt)++;
+   }
+   else walkslowly ();//walkSlowly()로 수정해야함 예시용
+   free(input);
+   draw_fpga_video_data_full(input);
+   flip();
 }
 
 void Greening(int *StopCnt)
@@ -766,4 +890,57 @@ void upTrap(int *StopCnt)
 	draw_fpga_video_data_full(input);
 	flip();
 	free(input);
+}
+
+void GO_TO_RED_STAIR_MID()
+{
+	short i, j;
+	U16 *input = (U16*)malloc(2*180*120);
+	U32 Red_Count = 0;
+	range Range = {400, 6500};
+	
+	while(1){
+	Red_Count = Find_Color(0xF800, Range);
+
+	
+	if(Red_Count == 1)
+	{
+		if(position[0].x < 80)
+		{
+			GoRight();
+		}
+		else if(position[0].x > 100)
+		{
+			GoLeft();
+		}
+		else
+		{
+			free(input);
+			return;
+		}
+	}else
+	{
+
+	for(i=0;i<Red_Count;i++)
+	{
+		if(position[0].x < 80)
+		{
+			GoRight();
+		}
+		else if(position[0].x > 100)
+		{
+			GoLeft();
+		}
+		else
+		{
+			free(input);
+			return;
+		}
+	}
+
+	}
+
+	free(input);
+	return;
+	}
 }

@@ -54,10 +54,18 @@ typedef struct {
 	U16 max_area;
 }range;
 
+typedef struct{
+    U16 First_x;
+    U16 First_y;
+    U16 Second_x;
+    U16 Second_y;
+}Pos_range;
+
 bool MatchLineWithBlack(U16 *input);
 bool Red_Bridge();
 bool Find_Black_circle(int *StopCnt);
 U32 Find_Color(U16 Color, range Range);
+U32 Find_Color_RANGE(U16 Color, range Range, Pos_range pos_range);
 void BeforeStart(int *StopCnt);
 void StartBarigate(int *StopCnt);
 void upRedStair(int *StopCnt);
@@ -69,5 +77,6 @@ void GreenBridge(int *StopCnt);
 void Greening(int *StopCnt);
 void DownGreen(int *StopCnt);
 void upTrap(int *StopCnt);
+void GO_TO_RED_STAIR_MID();
 
 #endif
