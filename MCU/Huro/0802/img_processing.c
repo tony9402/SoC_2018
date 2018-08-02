@@ -911,7 +911,7 @@ void Greening(int *StopCnt)
 	short i, j;
 	U32 Green_j_cnt = 0, Green_j = 0;
 	U32 Green_Count;
-	range Range = {400, 15000};
+	range Range = {200, 15000};
 	Pos_range pos_range = {20, height / 2, width - 20, height};
 	
 	while(1){
@@ -923,7 +923,7 @@ void Greening(int *StopCnt)
 			Green_j_cnt += position[i].x;
 		}
 
-		Green_j = (Green_Count == 0 ? 0 : Green_j_cnt / Green_Count);
+		Green_j = (Green_j_cnt / Green_Count);
 
 		for (i = 60; i < 120; i++)
 		{
